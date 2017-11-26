@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <TextView
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:layout_marginBottom="20dp"
+        android:text="Odcisk palca"
+        />
+
+    <android.support.v7.widget.AppCompatImageView
+        android:id="@+id/fingerprint_image"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        app:srcCompat="@drawable/ic_fingerprint_black_24dp"
+        android:layout_marginBottom="20dp"
+        />
+    <TextView
+        android:id="@+id/fingerprint_info_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:textSize="16dp"
+        android:textColor="#ea0404"
+        android:text="Brak autoryzacji"
+        android:visibility="gone"
+        android:gravity="center"
+        />
+
+    <Button
+        android:id="@+id/fingerprint_enter_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Kontynuuj"
+        android:layout_marginBottom="16dp"
+        />
+    <Button
+        android:id="@+id/fingerprint_change_auth_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Zmień sposób autoryzacji"
+
+        />
+</LinearLayout>
