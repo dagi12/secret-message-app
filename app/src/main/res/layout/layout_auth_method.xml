@@ -4,27 +4,30 @@
     android:id="@+id/select_authentication_method"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:gravity="center_horizontal"
+    android:orientation="vertical"
     >
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="20dp"
-        android:text="Wybierz metodę zabezpieczeń:"
         android:layout_marginBottom="20dp"
+        android:text="@string/security_method"
+        android:textSize="20sp"
         />
+
     <Button
         android:id="@+id/password_auth_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:text="Hasło"
+        android:text="@string/password"
         />
+
     <Button
         android:id="@+id/fingerprint_auth_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Odcisk palca"
+        android:text="@string/fingerprint"
         />
 </LinearLayout>

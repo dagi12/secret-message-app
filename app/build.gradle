@@ -1,12 +1,31 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'me.tatarka:gradle-retrolambda:3.7.0'
+    }
+}
+
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://maven.google.com"
+    }
+}
+
 apply plugin: 'com.android.application'
+apply plugin: 'me.tatarka.retrolambda'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 26
     defaultConfig {
         applicationId "pl.edu.amu.wmi.secretmessageapp"
         minSdkVersion 23
-        targetSdkVersion 27
-        buildToolsVersion "27.0.1"
+        targetSdkVersion 26
+        buildToolsVersion "26.0.2"
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -17,13 +36,34 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
+
+
 dependencies {
-    compile 'com.android.support:appcompat-v7:27.0.0'
+    // "intro" pierwsze ekrany konfiguracyjne
+    compile 'com.github.apl-devs:appintro:v4.2.2'
+
+    // od google
+    compile 'com.android.support:appcompat-v7:26.1.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
+
+    // boilerplate testy
     testCompile 'junit:junit:4.12'
-    androidTestCompile 'com.android.support:support-annotations:27.0.0'
+    androidTestCompile 'com.android.support:support-annotations:26.1.0'
     androidTestCompile 'com.android.support.test:runner:1.0.1'
     androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
+
+    // łatwiejsza obsługa uprawnień
+    compile 'pub.devrel:easypermissions:1.0.1'
+
+    // generowanie kodu javovego np. gettery i settery, konstuktory
+    provided 'org.projectlombok:lombok:1.16.18'
+
+    // ogólna biblioteka do wstrzykiwania zależności i uproszczenia kodu Androidowego
+    compile 'org.androidannotations:androidannotations-api:4.4.0'
 }

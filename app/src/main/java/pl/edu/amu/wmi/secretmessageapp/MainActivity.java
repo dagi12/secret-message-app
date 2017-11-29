@@ -1,7 +1,6 @@
 package pl.edu.amu.wmi.secretmessageapp;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -17,8 +16,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -43,59 +42,90 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 
-public class MainActivity extends AppCompatActivity implements FingerprintHandler.onAuthentifiactionSuccessListener {
+import static android.text.TextUtils.isEmpty;
 
+public class MainActivity extends AppCompatActivity implements AuthenticationSuccessListener {
 
     private static final String PASS_ALIAS = "PASS_ALIAS";
+
     private static final String MESSAGE_ALIAS = "MESSAGE_ALIAS";
-    private static final String FINGERPTINT_ALIAS = "FINGERPRINT_ALIAS";
+
+    private static final String FINGERPRINT_ALIAS = "FINGERPRINT_ALIAS";
 
     private static final String ANDROID_KEY_STORE = "AndroidKeyStore";
 
     private static final String sharedPrefKey = "sharedPrefKey";
-    private static final String fingerprintAuthSharedPrefKey="fingerprintAuthSharedPrefKey";
+
+    private static final String fingerprintAuthSharedPrefKey = "fingerprintAuthSharedPrefKey";
+
     private static final String passwordSharedPrefKey = "passwordSharedPrefKey";
+
     private static final String messageSharedPrefKey = "messageSharedPrefKey";
+
     private static final String ivSharedPassPrefKey = "ivSharedPassPrefKey";
+
     private static final String ivSharedMesPrefKey = "ivSharedMesPrefKey";
+
     private static final String isMessageSavedPrefKey = "isMessageSavedPrefKey";
 
+    private static final String TAG = MainActivity.class.getSimpleName();
+
     private KeyStore keyStore;
+
     private FingerprintHandler helper;
 
     private View selectAuthMethodLayout;
+
     private Button passwordAuthButton;
+
     private Button fingerprintAuthButton;
 
     private View createPasswordLayout;
+
     private EditText createPasswordEditText;
+
     private Button createPasswordButton;
 
     private View fingerPrintLayout;
+
     private Button enterFingerprintButton;
+
     private Button fingerprintChangeAuthorization;
+
     private TextView fingerprintInfoText;
 
     private View createMessageLayout;
+
     private EditText createMessageEditText;
+
     private Button saveMessageButton;
 
     private View enterPasswordLayout;
+
     private EditText enterPasswordEditText;
+
     private Button enterPasswordButton;
+
     private Button passwordChangeAuthorization;
 
     private View showMessageLayout;
+
     private TextView messageTextView;
+
     private Button exitButton;
+
     private Button deleteDataButton;
 
     private SharedPreferences preferences;
-    private int attempts=0;
+
+    private int attempts = 0;
 
     private KeyguardManager keyguardManager;
+
     private FingerprintManager fingerprintManager;
+
     private boolean fingerprintAccepted = false;
+
     private boolean fingerprintAuthSelected = false;
 
     @Override
@@ -104,20 +134,19 @@ public class MainActivity extends AppCompatActivity implements FingerprintHandle
         setContentView(R.layout.activity_main);
         initializeResources();
         preferences = getSharedPreferences(sharedPrefKey, Context.MODE_PRIVATE);
-        try{
+        try {
             initKeyStore();
-        }catch (KeyStoreException | CertificateException |
-                NoSuchAlgorithmException | IOException e){
-            e.printStackTrace();
-            showToast("Problem z inicjalizacją klucza dostępu");
+        } catch (KeyStoreException | CertificateException |
+                NoSuchAlgorithmException | IOException e) {
+            Log.e(TAG, "", e);
+            showToast(getString(R.string.init_problem));
             return;
         }
 
         if (checkIfMessageSaved()) {
-            if(checkIfFingerprintAuth()){
+            if (checkIfFingerprintAuth()) {
                 initializeEnterFingerprint(false);
-            }
-            else{
+            } else {
                 initializeEnterPasswordLayout();
             }
 
@@ -150,94 +179,77 @@ public class MainActivity extends AppCompatActivity implements FingerprintHandle
         deleteDataButton = findViewById(R.id.delete_data_button);
     }
 
-    private void initializeSelectAuthMethodButton(final boolean isJustChangePassword){
+    private void initializeSelectAuthMethodButton(final boolean isJustChangePassword) {
         selectAuthMethodLayout.setVisibility(View.VISIBLE);
-        passwordAuthButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                selectAuthMethodLayout.setVisibility(View.GONE);
-                initializeCreatePasswordLayout(isJustChangePassword);
-            }
+        passwordAuthButton.setOnClickListener(view -> {
+            selectAuthMethodLayout.setVisibility(View.GONE);
+            initializeCreatePasswordLayout(isJustChangePassword);
         });
-        fingerprintAuthButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                selectAuthMethodLayout.setVisibility(View.GONE);
-                initializeEnterFingerprint(isJustChangePassword);
-            }
+        fingerprintAuthButton.setOnClickListener(view -> {
+            selectAuthMethodLayout.setVisibility(View.GONE);
+            initializeEnterFingerprint(isJustChangePassword);
         });
     }
 
-    private void initializeEnterFingerprint(final boolean isJustChangePassword){
+    private void initializeEnterFingerprint(final boolean isJustChangePassword) {
         fingerprintAccepted = false;
         keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
         fingerprintManager = (FingerprintManager) getSystemService(FINGERPRINT_SERVICE);
         fingerPrintLayout.setVisibility(View.VISIBLE);
-        fingerprintInfoText.setText("Odcisk palca");
+        fingerprintInfoText.setText(getString(R.string.fingerprint));
         checkFingerprintRequirements(isJustChangePassword);
-        enterFingerprintButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(fingerprintAccepted){
-                    fingerprintAccepted = false;
-                    fingerprintAuthSelected = true;
-                    if(isJustChangePassword || checkIfMessageSaved()){
-                        String message = getSecretMessage();
-                        if(message!=null){
-                            fingerPrintLayout.setVisibility(View.GONE);
-                            initializeShowMessageLayout(message);
-                        }
-                        else {
-                            showToast("Błąd przy przetwarzaniu");
-                        }
-                    }
-                    else{
+        enterFingerprintButton.setOnClickListener(view -> {
+            if (fingerprintAccepted) {
+                fingerprintAccepted = false;
+                fingerprintAuthSelected = true;
+                if (isJustChangePassword || checkIfMessageSaved()) {
+                    String message = getSecretMessage();
+                    if (message != null) {
                         fingerPrintLayout.setVisibility(View.GONE);
-                        fingerprintInfoText.setVisibility(View.GONE);
-                        initializeCreateMessageLayout();
+                        initializeShowMessageLayout(message);
+                    } else {
+                        showToast(getString(R.string.processing_error));
                     }
-                }
-                else{
-                    showToast("Brak autoryzacji");
-                }
-            }
-        });
-        fingerprintChangeAuthorization.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(fingerprintAccepted){
-                    fingerprintAccepted = false;
+                } else {
                     fingerPrintLayout.setVisibility(View.GONE);
                     fingerprintInfoText.setVisibility(View.GONE);
-                    initializeSelectAuthMethodButton(isJustChangePassword);
+                    initializeCreateMessageLayout();
                 }
-                else{
-                    showToast("Brak autoryzacji");
-                }
+            } else {
+                showToast(getString(R.string.no_auth));
+            }
+        });
+        fingerprintChangeAuthorization.setOnClickListener(view -> {
+            if (fingerprintAccepted) {
+                fingerprintAccepted = false;
+                fingerPrintLayout.setVisibility(View.GONE);
+                fingerprintInfoText.setVisibility(View.GONE);
+                initializeSelectAuthMethodButton(isJustChangePassword);
+            } else {
+                showToast(getString(R.string.no_auth));
             }
         });
     }
 
-    private void checkFingerprintRequirements(boolean isJustChangePassword){
-        if(!fingerprintManager.isHardwareDetected()){
-            fingerprintInfoText.setText("Nie wykryto czujnika linii papilarnych");
-        }
-        else {
+    private void checkFingerprintRequirements(boolean isJustChangePassword) {
+        if (!fingerprintManager.isHardwareDetected()) {
+            fingerprintInfoText.setText(R.string.no_sensor);
+        } else {
             // Checks whether fingerprint permission is set on manifest
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
-                fingerprintInfoText.setText("Brak pozwolenia na autoryzację za pomocą czujnika linii papilarnych");
-            }else{
+                fingerprintInfoText.setText(R.string.no_auth_permission);
+            } else {
                 // Check whether at least one fingerprint is registered
                 if (!fingerprintManager.hasEnrolledFingerprints()) {
-                    fingerprintInfoText.setText("Zapisz przynajmniej jeden odcisk palca w ustawieniach");
-                }else{
+                    fingerprintInfoText.setText(R.string.no_saved_fingerprints);
+                } else {
                     // Checks whether lock screen security is enabled or not
                     if (!keyguardManager.isKeyguardSecure()) {
-                        fingerprintInfoText.setText("Włącz ekran blokady w ustawieniach");
-                    }else{
+                        fingerprintInfoText.setText(R.string.enable_screen_lock);
+                    } else {
                         encryptFingerPrint();
-                        if(isJustChangePassword){
-                            showToast("Zmieniono sposób autoryzacji");
+                        if (isJustChangePassword) {
+                            showToast(getString(R.string.auth_method_changed));
                             saveFingerprintAuthToSharedPref(true);
                             resetPasswordSharedPreferences();
                             deleteKeystoreEntry(PASS_ALIAS);
@@ -249,18 +261,17 @@ public class MainActivity extends AppCompatActivity implements FingerprintHandle
     }
 
     @Override
-    public void onAuthentifiactionSuccess(Boolean success, @Nullable String message) {
-        if(success){
-            fingerprintInfoText.setTextColor(ContextCompat.getColor(this, R.color.green));
-            fingerprintInfoText.setText("Autoryzacja udana");
+    public void onAuthenticationSuccess(Boolean success, @Nullable String message) {
+        if (success) {
+            fingerprintInfoText.setTextColor(ContextCompat.getColor(this, R.color.primary_light));
+            fingerprintInfoText.setText(R.string.auth_success);
             fingerprintInfoText.setVisibility(View.VISIBLE);
             fingerprintAccepted = true;
-        }
-        else{
-            fingerprintInfoText.setTextColor(ContextCompat.getColor(this, R.color.red));
-            if(message==null){
-                fingerprintInfoText.setText("Autoryzacja nieudana");
-            }else {
+        } else {
+            fingerprintInfoText.setTextColor(ContextCompat.getColor(this, R.color.error));
+            if (message == null) {
+                fingerprintInfoText.setText(R.string.auth_failed);
+            } else {
                 fingerprintInfoText.setText(message);
             }
             fingerprintInfoText.setVisibility(View.VISIBLE);
@@ -272,36 +283,32 @@ public class MainActivity extends AppCompatActivity implements FingerprintHandle
         createPasswordLayout.setVisibility(View.VISIBLE);
         createPasswordEditText.setText("");
         createPasswordEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        createPasswordButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (!createPasswordEditText.getText().toString().equals("")) {
-                    if(isJustChangePassword){
-                        try {
-                            encryptAndSave(PASS_ALIAS, createPasswordEditText.getText().toString());
-                        } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException |
-                                NoSuchProviderException | NoSuchPaddingException | InvalidKeyException | IOException |
-                                InvalidAlgorithmParameterException | SignatureException | BadPaddingException |
-                                IllegalBlockSizeException e) {
-                            e.printStackTrace();
-                            showToast("Błąd podczas procesu szyfrowania");
-                            return;
-                        }
-                        saveFingerprintAuthToSharedPref(false);
-                        deleteKeystoreEntry(FINGERPTINT_ALIAS);
-                        createPasswordLayout.setVisibility(View.GONE);
-                        initializeEnterPasswordLayout();
-                        showToast("Zmieniono sposób autoryzacji");
+        createPasswordButton.setOnClickListener(view -> {
+            if (!createPasswordEditText.getText().toString().equals("")) {
+                if (isJustChangePassword) {
+                    try {
+                        encryptAndSave(PASS_ALIAS, createPasswordEditText.getText().toString());
+                    } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException |
+                            NoSuchProviderException | NoSuchPaddingException | InvalidKeyException | IOException |
+                            InvalidAlgorithmParameterException | SignatureException | BadPaddingException |
+                            IllegalBlockSizeException e) {
+                        e.printStackTrace();
+                        showToast(getString(R.string.encryption_error));
+                        return;
                     }
-                    else{
-                        createPasswordLayout.setVisibility(View.GONE);
-                        initializeCreateMessageLayout();
-                    }
-                    fingerprintAuthSelected = false;
-
+                    saveFingerprintAuthToSharedPref(false);
+                    deleteKeystoreEntry(FINGERPRINT_ALIAS);
+                    createPasswordLayout.setVisibility(View.GONE);
+                    initializeEnterPasswordLayout();
+                    showToast(getString(R.string.auth_method_changed));
                 } else {
-                    showToast("Brak hasła");
+                    createPasswordLayout.setVisibility(View.GONE);
+                    initializeCreateMessageLayout();
                 }
+                fingerprintAuthSelected = false;
+
+            } else {
+                showToast(getString(R.string.no_password));
             }
         });
     }
@@ -309,42 +316,37 @@ public class MainActivity extends AppCompatActivity implements FingerprintHandle
     private void initializeCreateMessageLayout() {
         createMessageLayout.setVisibility(View.VISIBLE);
         createMessageEditText.setText("");
-        saveMessageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (!createMessageEditText.getText().toString().equals("")) {
-                    try {
-                        if(fingerprintAuthSelected){
-                            saveFingerprintAuthToSharedPref(true);
-                        }
-                        else{
-                            encryptAndSave(PASS_ALIAS, createPasswordEditText.getText().toString());
-                        }
-
-                        encryptAndSave(MESSAGE_ALIAS, createMessageEditText.getText().toString());
-                    } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException |
-                            NoSuchProviderException | NoSuchPaddingException | InvalidKeyException | IOException |
-                            InvalidAlgorithmParameterException | SignatureException | BadPaddingException |
-                            IllegalBlockSizeException e) {
-                        e.printStackTrace();
-                        showToast("Błąd podczas procesu szyfrowania");
-                        initializeSelectAuthMethodButton(false);
-                        return;
-                    }
-                    createMessageLayout.setVisibility(View.GONE);
-                    createMessageEditText.setText("");
-                    createPasswordEditText.setText("");
-                    if(fingerprintAuthSelected){
-                        initializeEnterFingerprint(false);
-                    }
-                    else{
-                        initializeEnterPasswordLayout();
+        saveMessageButton.setOnClickListener(view -> {
+            if (!createMessageEditText.getText().toString().equals("")) {
+                try {
+                    if (fingerprintAuthSelected) {
+                        saveFingerprintAuthToSharedPref(true);
+                    } else {
+                        encryptAndSave(PASS_ALIAS, createPasswordEditText.getText().toString());
                     }
 
-                    showToast("Zapisano wiadomość");
-                } else {
-                    showToast("Brak wiadomości");
+                    encryptAndSave(MESSAGE_ALIAS, createMessageEditText.getText().toString());
+                } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException |
+                        NoSuchProviderException | NoSuchPaddingException | InvalidKeyException | IOException |
+                        InvalidAlgorithmParameterException | SignatureException | BadPaddingException |
+                        IllegalBlockSizeException e) {
+                    e.printStackTrace();
+                    showToast(getString(R.string.encryption_error));
+                    initializeSelectAuthMethodButton(false);
+                    return;
                 }
+                createMessageLayout.setVisibility(View.GONE);
+                createMessageEditText.setText("");
+                createPasswordEditText.setText("");
+                if (fingerprintAuthSelected) {
+                    initializeEnterFingerprint(false);
+                } else {
+                    initializeEnterPasswordLayout();
+                }
+
+                showToast(getString(R.string.msg_saved));
+            } else {
+                showToast(getString(R.string.no_msg));
             }
         });
     }
@@ -354,49 +356,42 @@ public class MainActivity extends AppCompatActivity implements FingerprintHandle
         enterPasswordLayout.setVisibility(View.VISIBLE);
         enterPasswordEditText.setText("");
         enterPasswordEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        enterPasswordButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        enterPasswordButton.setOnClickListener(view -> {
 
-                if (!enterPasswordEditText.getText().toString().equals("")) {
-                    if (isPasswordCorrect(enterPasswordEditText.getText().toString())) {
-                        String message = getSecretMessage();
-                        if(message!=null){
-                            enterPasswordLayout.setVisibility(View.GONE);
-                            enterPasswordEditText.setText("");
-                            initializeShowMessageLayout(message);
-                        }
-                        else {
-                            showToast("Błąd przy przetwarzaniu");
-                            enterPasswordEditText.setText("");
-                        }
-                    } else {
+            if (!enterPasswordEditText.getText().toString().equals("")) {
+                if (isPasswordCorrect(enterPasswordEditText.getText().toString())) {
+                    String message = getSecretMessage();
+                    if (message != null) {
+                        enterPasswordLayout.setVisibility(View.GONE);
                         enterPasswordEditText.setText("");
-                        resetPasswordAfterThreeAttempts();
+                        initializeShowMessageLayout(message);
+                    } else {
+                        showToast(getString(R.string.processing_error));
+                        enterPasswordEditText.setText("");
                     }
-
                 } else {
-                    showToast("Puste hasło");
+                    enterPasswordEditText.setText("");
+                    resetPasswordAfterThreeAttempts();
                 }
 
+            } else {
+                showToast(getString(R.string.empty_password));
             }
+
         });
 
-        passwordChangeAuthorization.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (!enterPasswordEditText.getText().toString().equals("")) {
-                    if (isPasswordCorrect(enterPasswordEditText.getText().toString())) {
-                        enterPasswordLayout.setVisibility(View.GONE);
-                        initializeCreatePasswordLayout(true);
-                    } else {
-                        resetPasswordAfterThreeAttempts();
-                        enterPasswordEditText.setText("");
-                    }
-
+        passwordChangeAuthorization.setOnClickListener(view -> {
+            if (!enterPasswordEditText.getText().toString().equals("")) {
+                if (isPasswordCorrect(enterPasswordEditText.getText().toString())) {
+                    enterPasswordLayout.setVisibility(View.GONE);
+                    initializeCreatePasswordLayout(true);
                 } else {
-                    showToast("Puste hasło");
+                    resetPasswordAfterThreeAttempts();
+                    enterPasswordEditText.setText("");
                 }
+
+            } else {
+                showToast(getString(R.string.empty_password));
             }
         });
     }
@@ -404,33 +399,25 @@ public class MainActivity extends AppCompatActivity implements FingerprintHandle
     private void initializeShowMessageLayout(String message) {
         showMessageLayout.setVisibility(View.VISIBLE);
         messageTextView.setText(message);
-        exitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
-        deleteDataButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                resetData();
-                showMessageLayout.setVisibility(View.GONE);
-                initializeSelectAuthMethodButton(false);
-                showToast("Dane zostały usunięte");
-            }
+        exitButton.setOnClickListener(view -> finish());
+        deleteDataButton.setOnClickListener(view -> {
+            resetData();
+            showMessageLayout.setVisibility(View.GONE);
+            initializeSelectAuthMethodButton(false);
+            showToast(getString(R.string.data_deleted));
         });
     }
 
-    private void resetPasswordAfterThreeAttempts(){
-        attempts = attempts+1;
-        if(attempts==3){
-            attempts=0;
+    private void resetPasswordAfterThreeAttempts() {
+        attempts = attempts + 1;
+        if (attempts == 3) {
+            attempts = 0;
             resetData();
-            showToast("Liczba prób przekroczona, dane usunięto");
+            showToast(getString(R.string.attempts_exceeded));
             enterPasswordLayout.setVisibility(View.GONE);
             initializeCreatePasswordLayout(false);
-        }else {
-            showToast("Błędne hasło");
+        } else {
+            showToast(getString(R.string.wrong_password));
         }
     }
 
@@ -491,7 +478,7 @@ public class MainActivity extends AppCompatActivity implements FingerprintHandle
         final KeyGenerator keyGenerator = KeyGenerator
                 .getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEY_STORE);
 
-        if(alias.equals(FINGERPTINT_ALIAS)){
+        if (alias.equals(FINGERPRINT_ALIAS)) {
             keyGenerator.init(new
                     KeyGenParameterSpec.Builder(alias,
                     KeyProperties.PURPOSE_ENCRYPT |
@@ -501,7 +488,7 @@ public class MainActivity extends AppCompatActivity implements FingerprintHandle
                     .setEncryptionPaddings(
                             KeyProperties.ENCRYPTION_PADDING_PKCS7)
                     .build());
-        }else{
+        } else {
             keyGenerator.init(new KeyGenParameterSpec.Builder(alias,
                     KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
                     .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
@@ -531,36 +518,38 @@ public class MainActivity extends AppCompatActivity implements FingerprintHandle
 
         Cipher cipher;
 
-        if(alias.equals(FINGERPTINT_ALIAS)){
+        if (alias.equals(FINGERPRINT_ALIAS)) {
             cipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/"
                     + KeyProperties.BLOCK_MODE_CBC + "/"
                     + KeyProperties.ENCRYPTION_PADDING_PKCS7);
-        }else {
+        } else {
             cipher = Cipher.getInstance("AES/GCM/NoPadding");
         }
 
 
         cipher.init(Cipher.ENCRYPT_MODE, getEncyptSecretKey(alias));
 
-        if(!alias.equals(FINGERPTINT_ALIAS)){
-            String encrypedString = bytesToString(cipher.doFinal(textToEncrypt.getBytes("UTF-8")));
-            if (alias.equals(PASS_ALIAS)) {
-                saveIvToSharedPreferences(true, cipher.getIV());
-                savePasswordToSharedPreferences(encrypedString);
-                saveFingerprintAuthToSharedPref(false);
-            } else {
-                saveIvToSharedPreferences(false, cipher.getIV());
-                saveMessageToSharedPreferences(encrypedString);
-                saveMessageSavedToSharedPreferences();
+        if (!alias.equals(FINGERPRINT_ALIAS)) {
+            if (!isEmpty(textToEncrypt)) {
+                String encrypedString = bytesToString(cipher.doFinal(textToEncrypt.getBytes("UTF-8")));
+                if (alias.equals(PASS_ALIAS)) {
+                    saveIvToSharedPreferences(true, cipher.getIV());
+                    savePasswordToSharedPreferences(encrypedString);
+                    saveFingerprintAuthToSharedPref(false);
+                } else {
+                    saveIvToSharedPreferences(false, cipher.getIV());
+                    saveMessageToSharedPreferences(encrypedString);
+                    saveMessageSavedToSharedPreferences();
+                }
             }
         }
         return cipher;
     }
 
-    private boolean encryptFingerPrint(){
+    private boolean encryptFingerPrint() {
         Cipher cipher;
         try {
-            cipher = encryptAndSave(FINGERPTINT_ALIAS, null);
+            cipher = encryptAndSave(FINGERPRINT_ALIAS, null);
         } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException |
                 NoSuchProviderException | NoSuchPaddingException | InvalidKeyException | IOException |
                 InvalidAlgorithmParameterException | SignatureException | BadPaddingException |
@@ -576,8 +565,8 @@ public class MainActivity extends AppCompatActivity implements FingerprintHandle
         return true;
     }
 
-    private void saveFingerprintAuthToSharedPref(boolean isFingerprint){
-        SharedPreferences.Editor editor= preferences.edit();
+    private void saveFingerprintAuthToSharedPref(boolean isFingerprint) {
+        SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(fingerprintAuthSharedPrefKey, isFingerprint);
         editor.commit();
     }
@@ -588,7 +577,7 @@ public class MainActivity extends AppCompatActivity implements FingerprintHandle
         editor.commit();
     }
 
-    private void resetPasswordSharedPreferences(){
+    private void resetPasswordSharedPreferences() {
         preferences.edit().remove(passwordSharedPrefKey).commit();
         preferences.edit().remove(ivSharedPassPrefKey).commit();
     }
@@ -620,7 +609,7 @@ public class MainActivity extends AppCompatActivity implements FingerprintHandle
         return preferences.getBoolean(isMessageSavedPrefKey, false);
     }
 
-    private boolean checkIfFingerprintAuth(){
+    private boolean checkIfFingerprintAuth() {
         return preferences.getBoolean(fingerprintAuthSharedPrefKey, false);
     }
 
@@ -648,43 +637,42 @@ public class MainActivity extends AppCompatActivity implements FingerprintHandle
         return Base64.decode(string, Base64.DEFAULT);
     }
 
-    private void resetData(){
+    private void resetData() {
         boolean keysDeleted = resetKeys();
-        if(keysDeleted){
+        if (keysDeleted) {
             resetSharedPreferences();
-        }
-        else {
-            showToast("Problem z usunięciem danych");
+        } else {
+            showToast(getString(R.string.data_deletion_error));
         }
     }
 
-    private void resetSharedPreferences(){
+    private void resetSharedPreferences() {
         preferences.edit().clear().commit();
     }
 
-    private boolean deleteKeystoreEntry(String alias){
+    private boolean deleteKeystoreEntry(String alias) {
         try {
             keyStore.deleteEntry(alias);
             return true;
-        }catch (KeyStoreException e){
+        } catch (KeyStoreException e) {
             return false;
         }
     }
 
-    private boolean resetKeys(){
+    private boolean resetKeys() {
         try {
             keyStore.deleteEntry(PASS_ALIAS);
             keyStore.deleteEntry(MESSAGE_ALIAS);
-            keyStore.deleteEntry(FINGERPTINT_ALIAS);
+            keyStore.deleteEntry(FINGERPRINT_ALIAS);
             return true;
-        }catch (KeyStoreException e){
+        } catch (KeyStoreException e) {
             return false;
         }
     }
 
     @Override
     protected void onResume() {
-        if(fingerPrintLayout.getVisibility()==View.VISIBLE){
+        if (fingerPrintLayout.getVisibility() == View.VISIBLE) {
             fingerprintInfoText.setVisibility(View.GONE);
             checkFingerprintRequirements(false);
         }
@@ -693,25 +681,23 @@ public class MainActivity extends AppCompatActivity implements FingerprintHandle
 
     @Override
     protected void onPause() {
-        if(showMessageLayout.getVisibility()==View.VISIBLE){
+        if (showMessageLayout.getVisibility() == View.VISIBLE) {
             showMessageLayout.setVisibility(View.GONE);
-            if(checkIfFingerprintAuth()){
+            if (checkIfFingerprintAuth()) {
                 fingerPrintLayout.setVisibility(View.VISIBLE);
-            }
-            else{
+            } else {
                 enterPasswordLayout.setVisibility(View.VISIBLE);
             }
 
-        }else if(createMessageLayout.getVisibility()==View.VISIBLE){
+        } else if (createMessageLayout.getVisibility() == View.VISIBLE) {
             createMessageEditText.setText("");
             createMessageLayout.setVisibility(View.GONE);
             selectAuthMethodLayout.setVisibility(View.VISIBLE);
-        }
-        else if(fingerPrintLayout.getVisibility()==View.VISIBLE){
+        } else if (fingerPrintLayout.getVisibility() == View.VISIBLE) {
             fingerprintInfoText.setVisibility(View.GONE);
         }
         fingerprintAccepted = false;
-        if(helper!=null){
+        if (helper != null) {
             helper.cancelAuth();
         }
         super.onPause();

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SecretMessageApp</string>
+    <string name="fingerprint">Odcisk palca</string>
+    <string name="password">Hasło</string>
+    <string name="security_method">Wybierz metodę zabezpieczeń</string>
+    <string name="init_problem">Problem z inicjalizacją klucza dostępu</string>
+    <string name="msg_saved">Zapisano wiadomość</string>
+    <string name="no_msg">Brak wiadomości</string>
+    <string name="processing_error">Błąd przy przetwarzaniu</string>
+    <string name="no_auth">Brak autoryzacji</string>
+    <string name="no_sensor">Nie wykryto czujnika linii papilarnych</string>
+    <string name="no_auth_permission">Brak pozwolenia na autoryzację za pomocą czujnika linii papilarnych</string>
+    <string name="no_saved_fingerprints">Zapisz przynajmniej jeden odcisk palca w ustawieniach</string>
+    <string name="enable_screen_lock">Włącz ekran blokady w ustawieniach</string>
+    <string name="auth_method_changed">Zmieniono sposób autoryzacji</string>
+    <string name="auth_success">Autoryzacja udana</string>
+    <string name="auth_failed">Autoryzacja nieudana</string>
+    <string name="encryption_error">Błąd podczas procesu szyfrowania</string>
+    <string name="no_password">Brak hasła</string>
+    <string name="empty_password">Puste hasło</string>
+    <string name="data_deleted">Dane zostały usunięte</string>
+    <string name="attempts_exceeded">Liczba prób przekroczona, dane usunięto</string>
+    <string name="data_deletion_error">Problem z usunięciem danych</string>
+</resources>

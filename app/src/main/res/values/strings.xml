@@ -1,3 +1,25 @@
 <resources>
     <string name="app_name">SecretMessageApp</string>
+    <string name="fingerprint">Fingerprint</string>
+    <string name="password">Password</string>
+    <string name="security_method">Choose security method</string>
+    <string name="init_problem">Access key initialization problem</string>
+    <string name="msg_saved">Message saved</string>
+    <string name="no_msg">No message</string>
+    <string name="processing_error">Error during processing</string>
+    <string name="no_auth">No authorization</string>
+    <string name="no_sensor">No fingerprint sensor</string>
+    <string name="no_auth_permission">No fingerprint sensor permission</string>
+    <string name="no_saved_fingerprints">Save at least one fingerprint</string>
+    <string name="enable_screen_lock">Enable screen lock</string>
+    <string name="auth_method_changed">Authorization method changed</string>
+    <string name="auth_success">Authentication success</string>
+    <string name="auth_failed">Authentication failed</string>
+    <string name="encryption_error">Encryption error</string>
+    <string name="no_password">No password</string>
+    <string name="empty_password">Empty password</string>
+    <string name="data_deleted">Data has been deleted</string>
+    <string name="attempts_exceeded">Number of attempts exceeeded, data has been deleted</string>
+    <string name="wrong_password">Wrong password</string>
+    <string name="data_deletion_error">Data deleting error</string>
 </resources>
