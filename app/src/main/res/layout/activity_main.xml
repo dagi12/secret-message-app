@@ -7,28 +7,6 @@
                 tools:context="pl.edu.amu.wmi.secretmessageapp.MainActivity">
 
     <include
-        android:id="@+id/select_authentication_method_layout"
-        layout="@layout/layout_auth_method"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"/>
-
-    <include
-        android:id="@+id/create_password_layout"
-        layout="@layout/layout_create_password"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        />
-
-    <include
-        android:id="@+id/create_message_layout"
-        layout="@layout/layout_create_message"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"/>
-
-    <include
         android:id="@+id/fingerprint_layout"
         layout="@layout/layout_enter_fingerprint"
         android:layout_width="match_parent"

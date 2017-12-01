@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SecretMessageApp</string>
+
+    <!-- common stuff -->
+    <string name="error">Błąd</string>
+    <string name="notification">Powiadomienie</string>
+    <string name="enable">Włącz</string>
+    <string name="disable">Wyłącz</string>
+    <string name="cancel">Anuluj</string>
+    <string name="retry">Ponów</string>
+    <string name="off">WYŁ.</string>
+    <string name="continue_txt">Kontynuuj</string>
+    <string name="please_wait">Prosimy poczekać…</string>
+    <string name="authorization">Uwierzytelnianie…</string>
+    <string name="delete">Usuń</string>
+    <string name="no_data">Brak danych</string>
+    <string name="comments">Komentarze</string>
+    <string name="publish">Opublikuj</string>
+    <string name="initializing">Initializing…</string>
+
     <string name="fingerprint">Odcisk palca</string>
     <string name="password">Hasło</string>
     <string name="security_method">Wybierz metodę zabezpieczeń</string>
@@ -22,4 +40,10 @@
     <string name="data_deleted">Dane zostały usunięte</string>
     <string name="attempts_exceeded">Liczba prób przekroczona, dane usunięto</string>
     <string name="data_deletion_error">Problem z usunięciem danych</string>
+    <string name="create_password">Utwórz hasło</string>
+    <string name="register">Zarejestruj</string>
+    <string name="create_message">Utwórz wiadomość</string>
+    <string name="no_fingerprint1"><![CDATA[Secure lock screen hasn\'t set up. Go to \'Settings -> Security -> Fingerprint\' to set up a fingerprint]]></string>
+    <string name="no_fingerprint2"><![CDATA[Go to \'Settings -> Security -> Fingerprint\' and register at least one fingerprint]]></string>
 </resources>
+

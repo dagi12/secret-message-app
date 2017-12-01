@@ -58,12 +58,10 @@ dependencies {
     androidTestCompile 'com.android.support.test:runner:1.0.1'
     androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
 
-    // łatwiejsza obsługa uprawnień
-    compile 'pub.devrel:easypermissions:1.0.1'
+    // do tych fikuśnych editextów z latającą etykietą (np. wiadomość)
+    compile 'com.android.support:design:26.1.0'
 
-    // generowanie kodu javovego np. gettery i settery, konstuktory
-    provided 'org.projectlombok:lombok:1.16.18'
-
-    // ogólna biblioteka do wstrzykiwania zależności i uproszczenia kodu Androidowego
+    // ogólna biblioteka do wstrzykiwania zależności i uproszczenia kodu Androidowego, generuje klasy
     compile 'org.androidannotations:androidannotations-api:4.4.0'
+    annotationProcessor "org.androidannotations:androidannotations:4.4.0"
 }

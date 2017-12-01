@@ -20,7 +20,7 @@
         android:layout_width="72dp"
         android:layout_height="72dp"
         android:layout_marginBottom="20dp"
-        app:srcCompat="@drawable/ic_fingerprint_black_24dp"
+        app:srcCompat="@drawable/ic_fingerprint"
         />
 
     <TextView

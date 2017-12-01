@@ -12,7 +12,6 @@ import android.security.keystore.KeyProperties;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Base64;
@@ -44,7 +43,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 import static android.text.TextUtils.isEmpty;
 
-public class MainActivity extends AppCompatActivity implements AuthenticationSuccessListener {
+public class MainActivity extends AppCompatActivity {
 
     private static final String PASS_ALIAS = "PASS_ALIAS";
 
@@ -66,19 +65,9 @@ public class MainActivity extends AppCompatActivity implements AuthenticationSuc
 
     private static final String ivSharedMesPrefKey = "ivSharedMesPrefKey";
 
-    private static final String isMessageSavedPrefKey = "isMessageSavedPrefKey";
-
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private KeyStore keyStore;
-
-    private FingerprintHandler helper;
-
-    private View selectAuthMethodLayout;
-
-    private Button passwordAuthButton;
-
-    private Button fingerprintAuthButton;
 
     private View createPasswordLayout;
 
@@ -94,11 +83,7 @@ public class MainActivity extends AppCompatActivity implements AuthenticationSuc
 
     private TextView fingerprintInfoText;
 
-    private View createMessageLayout;
-
     private EditText createMessageEditText;
-
-    private Button saveMessageButton;
 
     private View enterPasswordLayout;
 
@@ -143,32 +128,32 @@ public class MainActivity extends AppCompatActivity implements AuthenticationSuc
             return;
         }
 
-        if (checkIfMessageSaved()) {
-            if (checkIfFingerprintAuth()) {
-                initializeEnterFingerprint(false);
-            } else {
-                initializeEnterPasswordLayout();
-            }
+//        if (checkIfMessageSaved()) {
+//            if (checkIfFingerprintAuth()) {
+//                initializeEnterFingerprint(false);
+//            } else {
+//                initializeEnterPasswordLayout();
+//            }
 
-        } else {
-            initializeSelectAuthMethodButton(false);
-        }
+//        } else {
+        initializeSelectAuthMethodButton(false);
+//        }
     }
 
     private void initializeResources() {
-        selectAuthMethodLayout = findViewById(R.id.select_authentication_method_layout);
-        passwordAuthButton = findViewById(R.id.password_auth_button);
-        fingerprintAuthButton = findViewById(R.id.fingerprint_auth_button);
+//        selectAuthMethodLayout = findViewById(R.id.select_authentication_method_layout);
+//        passwordAuthButton = findViewById(R.id.password_auth_button);
+//        fingerprintAuthButton = findViewById(R.id.fingerprint_auth_button);
         createPasswordLayout = findViewById(R.id.create_password_layout);
-        createPasswordEditText = findViewById(R.id.create_password_edit_text);
+//        createPasswordEditText = findViewById(R.id.et_create_password);
         createPasswordButton = findViewById(R.id.create_password_continue);
-        createMessageLayout = findViewById(R.id.create_message_layout);
-        createMessageEditText = findViewById(R.id.create_message_edit_text);
+//        createMessageLayout = findViewById(R.id.create_message_layout);
+//        createMessageEditText = findViewById(R.id.create_message_edit_text);
         fingerPrintLayout = findViewById(R.id.fingerprint_layout);
         fingerprintChangeAuthorization = findViewById(R.id.fingerprint_change_auth_button);
         enterFingerprintButton = findViewById(R.id.fingerprint_enter_button);
         fingerprintInfoText = findViewById(R.id.fingerprint_info_text);
-        saveMessageButton = findViewById(R.id.save_message_button);
+//        saveMessageButton = findViewById(R.id.save_message_button);
         enterPasswordLayout = findViewById(R.id.enter_password_layout);
         enterPasswordEditText = findViewById(R.id.enter_password_edit_text);
         enterPasswordButton = findViewById(R.id.enter_password_button);
@@ -180,15 +165,15 @@ public class MainActivity extends AppCompatActivity implements AuthenticationSuc
     }
 
     private void initializeSelectAuthMethodButton(final boolean isJustChangePassword) {
-        selectAuthMethodLayout.setVisibility(View.VISIBLE);
-        passwordAuthButton.setOnClickListener(view -> {
-            selectAuthMethodLayout.setVisibility(View.GONE);
-            initializeCreatePasswordLayout(isJustChangePassword);
-        });
-        fingerprintAuthButton.setOnClickListener(view -> {
-            selectAuthMethodLayout.setVisibility(View.GONE);
-            initializeEnterFingerprint(isJustChangePassword);
-        });
+//        selectAuthMethodLayout.setVisibility(View.VISIBLE);
+//        passwordAuthButton.setOnClickListener(view -> {
+//            selectAuthMethodLayout.setVisibility(View.GONE);
+//            initializeCreatePasswordLayout(isJustChangePassword);
+//        });
+//        fingerprintAuthButton.setOnClickListener(view -> {
+//            selectAuthMethodLayout.setVisibility(View.GONE);
+//            initializeEnterFingerprint(isJustChangePassword);
+//        });
     }
 
     private void initializeEnterFingerprint(final boolean isJustChangePassword) {
@@ -202,19 +187,19 @@ public class MainActivity extends AppCompatActivity implements AuthenticationSuc
             if (fingerprintAccepted) {
                 fingerprintAccepted = false;
                 fingerprintAuthSelected = true;
-                if (isJustChangePassword || checkIfMessageSaved()) {
-                    String message = getSecretMessage();
-                    if (message != null) {
-                        fingerPrintLayout.setVisibility(View.GONE);
-                        initializeShowMessageLayout(message);
-                    } else {
-                        showToast(getString(R.string.processing_error));
-                    }
-                } else {
-                    fingerPrintLayout.setVisibility(View.GONE);
-                    fingerprintInfoText.setVisibility(View.GONE);
-                    initializeCreateMessageLayout();
-                }
+//                if (isJustChangePassword || checkIfMessageSaved()) {
+//                    String message = getSecretMessage();
+//                    if (message != null) {
+//                        fingerPrintLayout.setVisibility(View.GONE);
+//                        initializeShowMessageLayout(message);
+//                    } else {
+//                        showToast(getString(R.string.processing_error));
+//                    }
+//                } else {
+                fingerPrintLayout.setVisibility(View.GONE);
+                fingerprintInfoText.setVisibility(View.GONE);
+                initializeCreateMessageLayout();
+//                }
             } else {
                 showToast(getString(R.string.no_auth));
             }
@@ -247,7 +232,7 @@ public class MainActivity extends AppCompatActivity implements AuthenticationSuc
                     if (!keyguardManager.isKeyguardSecure()) {
                         fingerprintInfoText.setText(R.string.enable_screen_lock);
                     } else {
-                        encryptFingerPrint();
+//                        encryptFingerPrint();
                         if (isJustChangePassword) {
                             showToast(getString(R.string.auth_method_changed));
                             saveFingerprintAuthToSharedPref(true);
@@ -260,24 +245,24 @@ public class MainActivity extends AppCompatActivity implements AuthenticationSuc
         }
     }
 
-    @Override
-    public void onAuthenticationSuccess(Boolean success, @Nullable String message) {
-        if (success) {
-            fingerprintInfoText.setTextColor(ContextCompat.getColor(this, R.color.primary_light));
-            fingerprintInfoText.setText(R.string.auth_success);
-            fingerprintInfoText.setVisibility(View.VISIBLE);
-            fingerprintAccepted = true;
-        } else {
-            fingerprintInfoText.setTextColor(ContextCompat.getColor(this, R.color.error));
-            if (message == null) {
-                fingerprintInfoText.setText(R.string.auth_failed);
-            } else {
-                fingerprintInfoText.setText(message);
-            }
-            fingerprintInfoText.setVisibility(View.VISIBLE);
-            fingerprintAccepted = false;
-        }
-    }
+//    @Override
+//    public void onAuthenticationSuccess(Boolean success, @Nullable String message) {
+//        if (success) {
+//            fingerprintInfoText.setTextColor(ContextCompat.getColor(this, R.color.primary_light));
+//            fingerprintInfoText.setText(R.string.auth_success);
+//            fingerprintInfoText.setVisibility(View.VISIBLE);
+//            fingerprintAccepted = true;
+//        } else {
+//            fingerprintInfoText.setTextColor(ContextCompat.getColor(this, R.color.error));
+//            if (message == null) {
+//                fingerprintInfoText.setText(R.string.auth_failed);
+//            } else {
+//                fingerprintInfoText.setText(message);
+//            }
+//            fingerprintInfoText.setVisibility(View.VISIBLE);
+//            fingerprintAccepted = false;
+//        }
+//    }
 
     private void initializeCreatePasswordLayout(final boolean isJustChangePassword) {
         createPasswordLayout.setVisibility(View.VISIBLE);
@@ -314,41 +299,41 @@ public class MainActivity extends AppCompatActivity implements AuthenticationSuc
     }
 
     private void initializeCreateMessageLayout() {
-        createMessageLayout.setVisibility(View.VISIBLE);
+//        createMessageLayout.setVisibility(View.VISIBLE);
         createMessageEditText.setText("");
-        saveMessageButton.setOnClickListener(view -> {
-            if (!createMessageEditText.getText().toString().equals("")) {
-                try {
-                    if (fingerprintAuthSelected) {
-                        saveFingerprintAuthToSharedPref(true);
-                    } else {
-                        encryptAndSave(PASS_ALIAS, createPasswordEditText.getText().toString());
-                    }
-
-                    encryptAndSave(MESSAGE_ALIAS, createMessageEditText.getText().toString());
-                } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException |
-                        NoSuchProviderException | NoSuchPaddingException | InvalidKeyException | IOException |
-                        InvalidAlgorithmParameterException | SignatureException | BadPaddingException |
-                        IllegalBlockSizeException e) {
-                    e.printStackTrace();
-                    showToast(getString(R.string.encryption_error));
-                    initializeSelectAuthMethodButton(false);
-                    return;
-                }
-                createMessageLayout.setVisibility(View.GONE);
-                createMessageEditText.setText("");
-                createPasswordEditText.setText("");
+//        saveMessageButton.setOnClickListener(view -> {
+        if (!createMessageEditText.getText().toString().equals("")) {
+            try {
                 if (fingerprintAuthSelected) {
-                    initializeEnterFingerprint(false);
+                    saveFingerprintAuthToSharedPref(true);
                 } else {
-                    initializeEnterPasswordLayout();
+                    encryptAndSave(PASS_ALIAS, createPasswordEditText.getText().toString());
                 }
 
-                showToast(getString(R.string.msg_saved));
-            } else {
-                showToast(getString(R.string.no_msg));
+                encryptAndSave(MESSAGE_ALIAS, createMessageEditText.getText().toString());
+            } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException |
+                    NoSuchProviderException | NoSuchPaddingException | InvalidKeyException | IOException |
+                    InvalidAlgorithmParameterException | SignatureException | BadPaddingException |
+                    IllegalBlockSizeException e) {
+                e.printStackTrace();
+                showToast(getString(R.string.encryption_error));
+                initializeSelectAuthMethodButton(false);
+                return;
             }
-        });
+//                createMessageLayout.setVisibility(View.GONE);
+            createMessageEditText.setText("");
+            createPasswordEditText.setText("");
+            if (fingerprintAuthSelected) {
+                initializeEnterFingerprint(false);
+            } else {
+                initializeEnterPasswordLayout();
+            }
+
+            showToast(getString(R.string.msg_saved));
+        } else {
+            showToast(getString(R.string.no_msg));
+        }
+//        });
     }
 
     private void initializeEnterPasswordLayout() {
@@ -546,24 +531,24 @@ public class MainActivity extends AppCompatActivity implements AuthenticationSuc
         return cipher;
     }
 
-    private boolean encryptFingerPrint() {
-        Cipher cipher;
-        try {
-            cipher = encryptAndSave(FINGERPRINT_ALIAS, null);
-        } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException |
-                NoSuchProviderException | NoSuchPaddingException | InvalidKeyException | IOException |
-                InvalidAlgorithmParameterException | SignatureException | BadPaddingException |
-                IllegalBlockSizeException e) {
-            e.printStackTrace();
-            showToast("Błąd podczas procesu szyfrowania");
-            return false;
-        }
-
-        FingerprintManager.CryptoObject cryptoObject = new FingerprintManager.CryptoObject(cipher);
-        helper = new FingerprintHandler(this, this);
-        helper.startAuth(fingerprintManager, cryptoObject);
-        return true;
-    }
+//    private boolean encryptFingerPrint() {
+//        Cipher cipher;
+//        try {
+//            cipher = encryptAndSave(FINGERPRINT_ALIAS, null);
+//        } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException |
+//                NoSuchProviderException | NoSuchPaddingException | InvalidKeyException | IOException |
+//                InvalidAlgorithmParameterException | SignatureException | BadPaddingException |
+//                IllegalBlockSizeException e) {
+//            e.printStackTrace();
+//            showToast("Błąd podczas procesu szyfrowania");
+//            return false;
+//        }
+//
+//        FingerprintManager.CryptoObject cryptoObject = new FingerprintManager.CryptoObject(cipher);
+//        helper = new FingerprintHandler(this, this);
+//        helper.startAuth(fingerprintManager, cryptoObject);
+//        return true;
+//    }
 
     private void saveFingerprintAuthToSharedPref(boolean isFingerprint) {
         SharedPreferences.Editor editor = preferences.edit();
@@ -572,9 +557,9 @@ public class MainActivity extends AppCompatActivity implements AuthenticationSuc
     }
 
     private void saveMessageSavedToSharedPreferences() {
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean(isMessageSavedPrefKey, true);
-        editor.commit();
+//        SharedPreferences.Editor editor = preferences.edit();
+//        editor.putBoolean(isMessageSavedPrefKey, true);
+//        editor.commit();
     }
 
     private void resetPasswordSharedPreferences() {
@@ -605,9 +590,6 @@ public class MainActivity extends AppCompatActivity implements AuthenticationSuc
         editor.commit();
     }
 
-    private boolean checkIfMessageSaved() {
-        return preferences.getBoolean(isMessageSavedPrefKey, false);
-    }
 
     private boolean checkIfFingerprintAuth() {
         return preferences.getBoolean(fingerprintAuthSharedPrefKey, false);
@@ -679,27 +661,28 @@ public class MainActivity extends AppCompatActivity implements AuthenticationSuc
         super.onResume();
     }
 
-    @Override
-    protected void onPause() {
-        if (showMessageLayout.getVisibility() == View.VISIBLE) {
-            showMessageLayout.setVisibility(View.GONE);
-            if (checkIfFingerprintAuth()) {
-                fingerPrintLayout.setVisibility(View.VISIBLE);
-            } else {
-                enterPasswordLayout.setVisibility(View.VISIBLE);
-            }
+//    @Override
+//    protected void onPause() {
+//        if (showMessageLayout.getVisibility() == View.VISIBLE) {
+//            showMessageLayout.setVisibility(View.GONE);
+//            if (checkIfFingerprintAuth()) {
+//                fingerPrintLayout.setVisibility(View.VISIBLE);
+//            } else {
+//                enterPasswordLayout.setVisibility(View.VISIBLE);
+//            }
+//
+//        } else if (createMessageLayout.getVisibility() == View.VISIBLE) {
+//            createMessageEditText.setText("");
+//            createMessageLayout.setVisibility(View.GONE);
+//            selectAuthMethodLayout.setVisibility(View.VISIBLE);
+//        } else if (fingerPrintLayout.getVisibility() == View.VISIBLE) {
+//            fingerprintInfoText.setVisibility(View.GONE);
+//        }
+//        fingerprintAccepted = false;
+//        if (helper != null) {
+//            helper.cancelAuth();
+//        }
+//        super.onPause();
+//    }
 
-        } else if (createMessageLayout.getVisibility() == View.VISIBLE) {
-            createMessageEditText.setText("");
-            createMessageLayout.setVisibility(View.GONE);
-            selectAuthMethodLayout.setVisibility(View.VISIBLE);
-        } else if (fingerPrintLayout.getVisibility() == View.VISIBLE) {
-            fingerprintInfoText.setVisibility(View.GONE);
-        }
-        fingerprintAccepted = false;
-        if (helper != null) {
-            helper.cancelAuth();
-        }
-        super.onPause();
-    }
 }
