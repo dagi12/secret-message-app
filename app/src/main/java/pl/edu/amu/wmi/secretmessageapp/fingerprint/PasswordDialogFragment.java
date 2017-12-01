@@ -9,6 +9,7 @@ import pl.edu.amu.wmi.secretmessageapp.R;
 /**
  * Stworzone przez Eryk Mariankowski dnia 01.12.17.
  */
-@EFragment(value = R.layout.fragment_fingerprint)
-public class FingerprintDialogFragment extends DialogFragment {
+@EFragment(value = R.layout.fragment_password)
+public class PasswordDialogFragment extends DialogFragment {
+
 }

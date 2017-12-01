@@ -15,9 +15,8 @@ public class DialogHelper {
     }
 
     public static AlertDialog errorDialog(Context context, String message) {
-        return new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.NoActionBarTheme_AlertDialogCustom))
+        return new AlertDialog.Builder(context, R.style.AppTheme_AlertDialogCustom)
                 .setTitle(context.getString(R.string.error))
-                .setInverseBackgroundForced(true)
                 .setMessage(message)
                 .setCancelable(false)
                 .setIcon(android.R.drawable.ic_dialog_alert)

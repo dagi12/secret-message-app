@@ -9,9 +9,11 @@ import android.security.keystore.KeyProperties;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.SystemService;
+import org.androidannotations.annotations.sharedpreferences.Pref;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -19,13 +21,18 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 
 import pl.edu.amu.wmi.secretmessageapp.R;
+
+import static android.preference.PreferenceManager.getDefaultSharedPreferences;
+import static android.text.TextUtils.isEmpty;
 
 /**
  * @author Eryk Mariankowski <eryk.mariankowski@247.codes> on 30.11.17.
@@ -33,21 +40,17 @@ import pl.edu.amu.wmi.secretmessageapp.R;
 @EBean(scope = EBean.Scope.Singleton)
 public class CipherStore {
 
+    private static final String TAG = CipherStore.class.getSimpleName();
+    static final String STORE_NAME = "AndroidKeyStore";
+    private static final String DEFAULT_KEY_NAME = "default_key";
     @SystemService
     KeyguardManager keyguardManager;
-
     @SystemService
     FingerprintManager fingerprintManager;
-
+    @Bean
+    EncryptionStore encryptionStore;
     @RootContext
     Context context;
-
-    private static final String TAG = CipherStore.class.getSimpleName();
-
-    private static final String STORE_NAME = "AndroidKeyStore";
-
-    private static final String DEFAULT_KEY_NAME = "default_key";
-
     private FingerprintManager.CryptoObject cryptoObject;
 
     private KeyStore keyStore;
@@ -60,10 +63,6 @@ public class CipherStore {
         return cryptoObject;
     }
 
-    public void setCryptoObject(FingerprintManager.CryptoObject cryptoObject) {
-        this.cryptoObject = cryptoObject;
-    }
-
     private void buildCiphers() {
         try {
             defaultCipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/"
@@ -74,7 +73,7 @@ public class CipherStore {
         }
     }
 
-    void init() {
+    public void init() {
         initKeys();
         buildCiphers();
         createKey();
@@ -82,8 +81,13 @@ public class CipherStore {
 
     @Nullable
     public String checkFingerprintPermission() {
+        // noinspection ResourceType
+        if (!fingerprintManager.isHardwareDetected()) {
+            return context.getString(R.string.no_sensor);
+        }
+
         if (!keyguardManager.isKeyguardSecure()) {
-            // Show a message that the user hasn't set up a fingerprint or lock screen.
+            // Show a encryptedMessage that the user hasn't set up a fingerprint or lock screen.
             return context.getString(R.string.no_fingerprint1);
         }
 
@@ -139,6 +143,60 @@ public class CipherStore {
             keyGenerator.generateKey();
         } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | CertificateException | IOException e) {
             Log.e(TAG, "", e);
+        }
+    }
+
+
+    public void saveFingerPrint() {
+        try {
+            encryptionPrefs.finger().put(true);
+            encryptionStore.resetPassword();
+            deleteKeystoreEntry(KeyAlias.PASS.name());
+        } catch (Exception e) {
+            Log.e(TAG, "", e);
+        }
+    }
+
+    @Pref
+    EncryptionPrefs_ encryptionPrefs;
+
+
+
+    public void deleteData() {
+        resetKeys();
+        resetSharedPreferences();
+    }
+
+    private void resetSharedPreferences() {
+        getDefaultSharedPreferences(context)
+                .edit()
+                .clear()
+                .apply();
+    }
+
+    private SecretKey getDesCryptSecretKey(final String alias) throws NoSuchAlgorithmException,
+            UnrecoverableEntryException, KeyStoreException {
+        KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) keyStore.getEntry(alias, null);
+        return entry.getSecretKey();
+    }
+
+    private boolean resetKeys() {
+        try {
+            keyStore.deleteEntry(KeyAlias.PASS.name());
+            keyStore.deleteEntry(KeyAlias.MSG.name());
+            keyStore.deleteEntry(KeyAlias.FINGER.name());
+            return true;
+        } catch (KeyStoreException e) {
+            return false;
+        }
+    }
+
+    private boolean deleteKeystoreEntry(String alias) {
+        try {
+            keyStore.deleteEntry(alias);
+            return true;
+        } catch (KeyStoreException e) {
+            return false;
         }
     }
 

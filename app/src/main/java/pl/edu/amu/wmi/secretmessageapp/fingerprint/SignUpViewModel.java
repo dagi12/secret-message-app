@@ -21,12 +21,26 @@ import android.content.SharedPreferences;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.CancellationSignal;
 import android.preference.PreferenceManager;
+import android.view.View;
 
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.SystemService;
+
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.UnrecoverableEntryException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 import pl.edu.amu.wmi.secretmessageapp.R;
 import pl.edu.amu.wmi.secretmessageapp.cipher.CipherStore;
@@ -35,10 +49,8 @@ import pl.edu.amu.wmi.secretmessageapp.cipher.CipherStore;
  * Small helper class to manage text/icon around fingerprint authentication UI.
  */
 @EBean
-class FingerprintViewModel extends FingerprintManager.AuthenticationCallback {
+class SignUpViewModel extends FingerprintManager.AuthenticationCallback {
 
-    @RootContext
-    Context context;
 
     @Bean
     CipherStore cipherStore;
@@ -52,11 +64,14 @@ class FingerprintViewModel extends FingerprintManager.AuthenticationCallback {
 
     private AuthCallback authCallback;
 
-    private SharedPreferences sharedPreferences;
+    @RootContext
+    Context context;
+
+    private SharedPreferences preferences;
 
     @AfterInject
     void init() {
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        preferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
     boolean isFingerprintAuthAvailable() {
@@ -109,7 +124,7 @@ class FingerprintViewModel extends FingerprintManager.AuthenticationCallback {
     boolean checkPassword(String password) {
         // Assume the password is always correct.
         // In the real world situation, the password needs to be verified in the server side.
-        return password.length() > 0;
+        return password.length() >= 6;
     }
 
     @Override
@@ -127,12 +142,12 @@ class FingerprintViewModel extends FingerprintManager.AuthenticationCallback {
         authCallback.onAuthenticated();
     }
 
-    void setAuthCallback(FingerprintDialogFragment authCallback) {
+    void setAuthCallback(SignUpDialogFragment authCallback) {
         this.authCallback = authCallback;
     }
 
     void passwordVerified(boolean futureFingerprint) {
-        sharedPreferences
+        preferences
                 .edit()
                 .putBoolean(
                         context.getString(R.string.use_fingerprint_to_authenticate_key),
@@ -144,4 +159,21 @@ class FingerprintViewModel extends FingerprintManager.AuthenticationCallback {
         }
     }
 
+    public void savePassword(String password) {
+        try {
+            encryptAndSave(PASS_ALIAS, createPasswordEditText.getText().toString());
+        } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException |
+                NoSuchProviderException | NoSuchPaddingException | InvalidKeyException | IOException |
+                InvalidAlgorithmParameterException | SignatureException | BadPaddingException |
+                IllegalBlockSizeException e) {
+            e.printStackTrace();
+            showToast(getString(R.string.encryption_error));
+            return;
+        }
+        saveFingerprintAuthToSharedPref(false);
+        deleteKeystoreEntry(FINGERPRINT_ALIAS);
+        createPasswordLayout.setVisibility(View.GONE);
+        initializeEnterPasswordLayout();
+        showToast(getString(R.string.auth_method_changed));
+    }
 }

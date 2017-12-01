@@ -17,15 +17,14 @@
         <activity
             android:name=".config.ConfigActivity_"
             android:excludeFromRecents="true"
-            android:noHistory="true"
-            android:theme="@style/NoActionBarTheme">
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity"/>
+        <activity android:name=".message._MainActivity_"/>
     </application>
 
 </manifest>

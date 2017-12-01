@@ -25,7 +25,8 @@
     <dimen name="text_size_2x">18sp</dimen>
     <dimen name="text_size_3x">22sp</dimen>
 
-    <dimen name="ic_intro_launcher">350dp</dimen>
+    <dimen name="ic_intro_launcher">300dp</dimen>
+    <dimen name="et_width">250dp</dimen>
     <integer name="et_max_len">255</integer>
     <integer name="password_max_len">10</integer>
 
