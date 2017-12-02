@@ -24,7 +24,6 @@ class ConfigViewModel {
     @Bean
     EncryptionStore encryptionStore;
 
-
     @Pref
     EncryptionPrefs_ encryptionPrefs;
 
@@ -45,12 +44,11 @@ class ConfigViewModel {
         return false;
     }
 
-    public boolean checkIfMessageSaved() {
-        return encryptionPrefs.messageSaved().get();
+    boolean checkIfMessageSaved() {
+        return encryptionPrefs.messageSaved().getOr(false);
     }
 
-
-    public boolean checkIfFingerprintAuth() {
+    boolean checkIfFingerprintAuth() {
         return encryptionPrefs.fingerprint().get();
     }
 

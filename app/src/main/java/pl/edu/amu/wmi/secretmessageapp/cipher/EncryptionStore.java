@@ -46,6 +46,7 @@ public class EncryptionStore {
 
     public static String CIPHER_TYPE = "AES/GCM/NoPadding";
 
+
     @Pref
     EncryptionPrefs_ encryptionPrefs;
 
@@ -87,7 +88,6 @@ public class EncryptionStore {
                     + KeyProperties.ENCRYPTION_PADDING_PKCS7);
             messageCipher = Cipher.getInstance(CIPHER_TYPE);
             passwordCipher = Cipher.getInstance(CIPHER_TYPE);
-            decryptCipher = Cipher.getInstance(CIPHER_TYPE);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
             Timber.e(e, "Failed to init cipher");
         }
@@ -115,12 +115,13 @@ public class EncryptionStore {
             KeyGenerator passwordKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE_NAME);
             KeyGenerator fingerprintKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE_NAME);
             KeyGenerator messageKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE_NAME);
-            passwordKeyGenerator.init(passwordSpec);
             messageKeyGenerator.init(messageSpec);
+
+            passwordKeyGenerator.init(passwordSpec);
             fingerprintKeyGenerator.init(fingerprintSpec);
             fingerprintCipher.init(Cipher.ENCRYPT_MODE, fingerprintKeyGenerator.generateKey());
             passwordCipher.init(Cipher.ENCRYPT_MODE, passwordKeyGenerator.generateKey());
-            fingerprintCipher.init(Cipher.ENCRYPT_MODE, passwordKeyGenerator.generateKey());
+            messageCipher.init(Cipher.ENCRYPT_MODE, messageKeyGenerator.generateKey());
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
             Timber.e(e, "Failed to create key generator");
         } catch (InvalidAlgorithmParameterException e) {
@@ -167,10 +168,11 @@ public class EncryptionStore {
     public String decryptMessage() {
         String encryptedMessage = encryptionPrefs.encryptedMsg().get();
         byte[] encryptedMessageBytes = stringToBytes(encryptedMessage);
-        GCMParameterSpec spec = new GCMParameterSpec(128, stringToBytes(encryptionPrefs.ivMsg().get()));
+        String msgIv = encryptionPrefs.ivMsg().get();
+        GCMParameterSpec spec = new GCMParameterSpec(128, stringToBytes(msgIv));
         try {
-            decryptCipher.init(Cipher.DECRYPT_MODE, desCryptSecretKey(KeyAlias.MSG), spec);
-            return new String(decryptCipher.doFinal(encryptedMessageBytes), ENCODING);
+            messageCipher.init(Cipher.DECRYPT_MODE, desCryptSecretKey(KeyAlias.MSG), spec);
+            return new String(messageCipher.doFinal(encryptedMessageBytes), ENCODING);
         } catch (UnsupportedEncodingException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException | InvalidKeyException e) {
             Timber.e(e);
         }
@@ -193,7 +195,6 @@ public class EncryptionStore {
             String encryptedMessage = bytesToString(messageCipher.doFinal(message.getBytes(ENCODING)));
             encryptionPrefs.encryptedMsg().put(encryptedMessage);
         } catch (Exception e) {
-
             Timber.e(e, "Failed to encrypt message");
         }
     }
@@ -210,6 +211,7 @@ public class EncryptionStore {
         }
     }
 
+
     public void resetData() {
         try {
             keyStore.deleteEntry(KeyAlias.MSG.name());
@@ -221,6 +223,7 @@ public class EncryptionStore {
         encryptionPrefs.clear();
         Intent intent = new Intent(context, ConfigActivity_.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        encryptionPrefs.messageSaved().put(false);
         context.startActivity(intent);
     }
 
