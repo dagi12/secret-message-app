@@ -2,7 +2,6 @@ package pl.edu.amu.wmi.secretmessageapp.helper;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.support.v7.view.ContextThemeWrapper;
 
 import pl.edu.amu.wmi.secretmessageapp.R;
 

@@ -10,6 +10,6 @@ public interface ConfigListener {
     void onRegistered(boolean withFingerprint);
 
     void onMessageSaved(Fragment fragment);
-    
+
     void onLoggedIn();
 }

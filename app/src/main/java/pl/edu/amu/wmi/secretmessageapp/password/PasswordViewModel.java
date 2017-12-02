@@ -1,6 +1,5 @@
 package pl.edu.amu.wmi.secretmessageapp.password;
 
-import android.app.Activity;
 import android.content.Context;
 import android.support.design.widget.TextInputLayout;
 import android.view.inputmethod.EditorInfo;
@@ -32,7 +31,7 @@ public class PasswordViewModel {
 
     private int attempts = 0;
 
-    public void resetPasswordAfterThreeAttempts() {
+    void resetPasswordAfterThreeAttempts() {
         attempts = attempts + 1;
         if (attempts == 3) {
             attempts = 0;
@@ -70,7 +69,7 @@ public class PasswordViewModel {
     /**
      * @return true if {@code et_password} is correct, false otherwise
      */
-    boolean checkPassword(String password) {
+    private boolean checkPassword(String password) {
         return password.length() >= 6;
     }
 

@@ -1,8 +1,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:weightSum="1">
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:weightSum="1">
 
 
     <android.support.design.widget.TextInputLayout
@@ -18,20 +18,20 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="@dimen/margin_1x"
             android:gravity="center"
-            android:textColorHint="@android:color/white"
             android:hint="@string/create_message"
             android:inputType="textPassword"
             android:maxLength="@integer/et_max_len"
-            android:maxLines="1" />
+            android:maxLines="1"
+            android:textColorHint="@android:color/white"/>
     </android.support.design.widget.TextInputLayout>
 
     <ImageView
         android:layout_width="@dimen/ic_intro_launcher"
         android:layout_height="0dp"
         android:layout_gravity="center"
+        android:layout_weight="0.40"
         android:contentDescription="@string/intro_picture"
-        android:src="@drawable/ic_launcher_web"
-        android:layout_weight="0.40" />
+        android:src="@drawable/ic_launcher_web"/>
 
 </LinearLayout>
 

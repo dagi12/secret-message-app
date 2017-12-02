@@ -12,9 +12,8 @@ import com.github.paolorotolo.appintro.AppIntro;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 
-import pl.edu.amu.wmi.secretmessageapp.MainActivity;
+import pl.edu.amu.wmi.secretmessageapp.MainActivity_;
 import pl.edu.amu.wmi.secretmessageapp.fingerprint.FingerprintDialogFragment_;
-
 import pl.edu.amu.wmi.secretmessageapp.password.PasswordDialogFragment_;
 import pl.edu.amu.wmi.secretmessageapp.setmessage.SetMessageFragment;
 import pl.edu.amu.wmi.secretmessageapp.setmessage.SetMessageFragment_;
@@ -111,7 +110,7 @@ public class ConfigActivity extends AppIntro implements ConfigListener {
 
     @Override
     public void onLoggedIn() {
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, MainActivity_.class);
         startActivity(intent);
     }
 
