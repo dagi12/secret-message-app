@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package pl.edu.amu.wmi.secretmessageapp.fingerprint;
+package pl.edu.amu.wmi.secretmessageapp.signup;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -85,6 +85,9 @@ public class SignUpDialogFragment extends CommonDialogFragment implements AuthCa
     @Pref
     EncryptionPrefs_ encryptionPrefs;
 
+    @Bean
+    PasswordViewModel passwordViewModel;
+
     private final Runnable mResetErrorTextRunnable = () -> {
         Resources resources = getContext().getResources();
         fingerprintStatus.setTextColor(resources.getColor(R.color.hint_color, null));
@@ -114,9 +117,6 @@ public class SignUpDialogFragment extends CommonDialogFragment implements AuthCa
         super.onCreate(savedInstanceState);
         signUpViewModel.setAuthCallback(this);
     }
-
-    @Bean
-    PasswordViewModel passwordViewModel;
 
     @AfterViews
     protected void initView() {
@@ -202,7 +202,7 @@ public class SignUpDialogFragment extends CommonDialogFragment implements AuthCa
         fingerprintIcon.postDelayed(() -> {
             // FingerprintCallback from SignUpViewModel. Let the activity know that authentication was
             // successful.
-            encryptionPrefs.fingerprint().put(true);
+            signUpViewModel.saveFingerprint();
             configListener.onRegistered(true);
             dismiss();
         }, SUCCESS_DELAY_MILLIS);

@@ -14,36 +14,20 @@
  * limitations under the License
  */
 
-package pl.edu.amu.wmi.secretmessageapp.fingerprint;
+package pl.edu.amu.wmi.secretmessageapp.signup;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.CancellationSignal;
-import android.preference.PreferenceManager;
-import android.view.View;
 
-import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.SystemService;
-
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
-import java.security.UnrecoverableEntryException;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+import org.androidannotations.annotations.sharedpreferences.Pref;
 
 import pl.edu.amu.wmi.secretmessageapp.R;
-import pl.edu.amu.wmi.secretmessageapp.cipher.CipherStore;
+import pl.edu.amu.wmi.secretmessageapp.cipher.EncryptionPrefs_;
 import pl.edu.amu.wmi.secretmessageapp.cipher.EncryptionStore;
 
 /**
@@ -52,28 +36,23 @@ import pl.edu.amu.wmi.secretmessageapp.cipher.EncryptionStore;
 @EBean
 class SignUpViewModel extends FingerprintManager.AuthenticationCallback {
 
-
-    @Bean
-    CipherStore cipherStore;
-
     @SystemService
     FingerprintManager mFingerprintManager;
+
+    @RootContext
+    Context context;
+
+    @Bean
+    EncryptionStore encryptionStore;
+
+    @Pref
+    EncryptionPrefs_ encryptionPrefs;
 
     private CancellationSignal mCancellationSignal;
 
     private boolean mSelfCancelled;
 
     private AuthCallback authCallback;
-
-    @RootContext
-    Context context;
-
-    private SharedPreferences preferences;
-
-    @AfterInject
-    void init() {
-        preferences = PreferenceManager.getDefaultSharedPreferences(context);
-    }
 
     boolean isFingerprintAuthAvailable() {
         // The line below prevents the false positive inspection from Android Studio
@@ -104,7 +83,7 @@ class SignUpViewModel extends FingerprintManager.AuthenticationCallback {
     void authenticate() {
         // noinspection ResourceType
         mFingerprintManager.authenticate(
-                cipherStore.getCryptoObject(),
+                encryptionStore.crypto(),
                 mCancellationSignal,
                 0,
                 this,
@@ -118,7 +97,6 @@ class SignUpViewModel extends FingerprintManager.AuthenticationCallback {
             authCallback.onError();
         }
     }
-
 
     @Override
     public void onAuthenticationHelp(int helpMsgId, CharSequence helpString) {
@@ -139,24 +117,14 @@ class SignUpViewModel extends FingerprintManager.AuthenticationCallback {
         this.authCallback = authCallback;
     }
 
-//    void passwordVerified(boolean futureFingerprint) {
-//        preferences
-//                .edit()
-//                .putBoolean(
-//                        context.getString(R.string.use_fingerprint_to_authenticate_key),
-//                        futureFingerprint)
-//                .apply();
-//        if (futureFingerprint) {
-//            // Re-create the key so that fingerprints including new ones are validated.
-//            cipherStore.createKey();
-//        }
-//    }
-
-    public void savePassword(String password) {
+    void savePassword(String password) {
         encryptionStore.savePass(password);
     }
 
-    @Bean
-    EncryptionStore encryptionStore;
+    void saveFingerprint() {
+        encryptionPrefs.fingerprint().put(true);
+        encryptionStore.resetPassword();
+    }
+
 
 }

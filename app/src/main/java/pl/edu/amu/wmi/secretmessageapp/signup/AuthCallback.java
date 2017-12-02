@@ -1,4 +1,4 @@
-package pl.edu.amu.wmi.secretmessageapp.fingerprint;
+package pl.edu.amu.wmi.secretmessageapp.signup;
 
 /**
  * @author Eryk Mariankowski <eryk.mariankowski@247.codes> on 01.12.17.
