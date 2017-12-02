@@ -29,7 +29,6 @@
     <string name="processing_error">Error during processing</string>
     <string name="no_auth">No authorization</string>
     <string name="no_sensor">No fingerprint sensor</string>
-    <string name="no_auth_permission">No fingerprint sensor permission</string>
     <string name="no_saved_fingerprints">Save at least one fingerprint</string>
     <string name="enable_screen_lock">Enable screen lock</string>
     <string name="auth_method_changed">Authorization method changed</string>
@@ -61,7 +60,7 @@
     <string name="fingerprint_description">Confirm fingerprint to continue</string>
 
 
-    <string name="password_description">Enter your store password to continue</string>
+    <string name="password_description">Enter your password to continue</string>
     <string name="purchase">Purchase</string>
     <string name="purchase_not_invalidated">Purchase not invalidated</string>
     <string name="purchase_button_not_invalidated_description">
@@ -74,4 +73,11 @@
     <string name="description_fingerprint_icon">Fingerprint icon</string>
     <string name="no_fingerprint1"><![CDATA[Secure lock screen hasn\'t set up. Go to \'Settings -> Security -> Fingerprint\' to set up a fingerprint]]></string>
     <string name="no_fingerprint2"><![CDATA[Go to \'Settings -> Security -> Fingerprint\' and register at least one fingerprint]]></string>
+
+    <string name="short_msg">Message must have at least 6 characters long.</string>
+    <string name="short_password">Password must be at least 6 characters long.</string>
+    <string name="remove_data">Usuń dane</string>
+    <string name="message">Message</string>
+    <string name="log_in">Log in</string>
 </resources>
+

@@ -28,7 +28,6 @@
     <string name="processing_error">Błąd przy przetwarzaniu</string>
     <string name="no_auth">Brak autoryzacji</string>
     <string name="no_sensor">Nie wykryto czujnika linii papilarnych</string>
-    <string name="no_auth_permission">Brak pozwolenia na autoryzację za pomocą czujnika linii papilarnych</string>
     <string name="no_saved_fingerprints">Zapisz przynajmniej jeden odcisk palca w ustawieniach</string>
     <string name="enable_screen_lock">Włącz ekran blokady w ustawieniach</string>
     <string name="auth_method_changed">Zmieniono sposób autoryzacji</string>
@@ -45,5 +44,9 @@
     <string name="create_message">Utwórz wiadomość</string>
     <string name="no_fingerprint1"><![CDATA[Secure lock screen hasn\'t set up. Go to \'Settings -> Security -> Fingerprint\' to set up a fingerprint]]></string>
     <string name="no_fingerprint2"><![CDATA[Go to \'Settings -> Security -> Fingerprint\' and register at least one fingerprint]]></string>
+    <string name="short_password">Password must be at least 6 characters long.</string>
+    <string name="remove_data">Usuń dane</string>
+    <string name="message">Message</string>
+    <string name="log_in">Log in</string>
 </resources>
 

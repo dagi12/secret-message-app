@@ -1,34 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="30dp"
-                tools:context="pl.edu.amu.wmi.secretmessageapp.MainActivity">
-
-    <include
-        android:id="@+id/fingerprint_layout"
-        layout="@layout/layout_enter_fingerprint"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        />
-
-    <include
-        android:id="@+id/enter_password_layout"
-        layout="@layout/layout_enter_password"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        />
-
-
-    <include
-        android:id="@+id/show_message_layout"
-        layout="@layout/layout_show_message"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        />
-
-</RelativeLayout>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="pl.edu.amu.wmi.secretmessageapp.MainActivity"/>
