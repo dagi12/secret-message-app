@@ -57,84 +57,20 @@ public class EncryptionStore {
     @SystemService
     FingerprintManager fingerprintManager;
 
-    private static String CIPHER_TYPE = "AES/GCM/NoPadding";
+    private static final String CIPHER_TYPE = "AES/GCM/NoPadding";
 
     private static final String ENCODING = "UTF-8";
 
     private static final String STORE_NAME = "AndroidKeyStore";
 
-    private Cipher fingerprintCipher;
-
-    private Cipher messageCipher;
-
-    private Cipher passwordCipher;
-
     private KeyStore keyStore;
-
-    private KeyGenerator passwordKeyGenerator;
-
-    private KeyGenerator fingerprintKeyGenerator;
-
-    private KeyGenerator messageKeyGenerator;
-
-    private KeyGenParameterSpec passwordSpec = specBuilder(KeyAlias.PASS);
-
-    private KeyGenParameterSpec messageSpec = specBuilder(KeyAlias.MSG);
-
-    private KeyGenParameterSpec fingerprintSpec = new KeyGenParameterSpec.Builder(KeyAlias.FINGER.name(),
-            KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
-            .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
-            .setUserAuthenticationRequired(true)
-            .setEncryptionPaddings(
-                    KeyProperties.ENCRYPTION_PADDING_PKCS7)
-            .build();
 
     private static String bytesToString(byte[] bytes) {
         return Base64.encodeToString(bytes, Base64.DEFAULT);
     }
 
-    static byte[] stringToBytes(String string) {
+    private static byte[] stringToBytes(String string) {
         return Base64.decode(string, Base64.DEFAULT);
-    }
-
-    private void initCiphers() {
-        try {
-            fingerprintCipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/"
-                    + KeyProperties.BLOCK_MODE_CBC + "/"
-                    + KeyProperties.ENCRYPTION_PADDING_PKCS7);
-            messageCipher = Cipher.getInstance(CIPHER_TYPE);
-            passwordCipher = Cipher.getInstance(CIPHER_TYPE);
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-            Timber.e(e, "Failed to init cipher");
-        }
-    }
-
-    private KeyGenParameterSpec specBuilder(KeyAlias keyAlias) {
-        return new KeyGenParameterSpec.Builder(keyAlias.name(),
-                KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
-                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                .build();
-    }
-
-    private void initKeyGenParameterSpec() {
-        try {
-            passwordKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE_NAME);
-            fingerprintKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE_NAME);
-            messageKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE_NAME);
-            messageKeyGenerator.init(messageSpec);
-            passwordKeyGenerator.init(passwordSpec);
-            fingerprintKeyGenerator.init(fingerprintSpec);
-            fingerprintCipher.init(Cipher.ENCRYPT_MODE, fingerprintKeyGenerator.generateKey());
-            passwordCipher.init(Cipher.ENCRYPT_MODE, passwordKeyGenerator.generateKey());
-            messageCipher.init(Cipher.ENCRYPT_MODE, messageKeyGenerator.generateKey());
-        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-            Timber.e(e, "Failed to create key generator");
-        } catch (InvalidAlgorithmParameterException e) {
-            Timber.e(e, "Failed to init with parameter");
-        } catch (InvalidKeyException e) {
-            Timber.e(e, "Failed to get cipher instance");
-        }
     }
 
     public void init() {
@@ -144,14 +80,12 @@ public class EncryptionStore {
         } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
             Timber.e(e, "Failed to get an instance of KeyStore");
         }
-        initCiphers();
-        initKeyGenParameterSpec();
     }
 
     public String decryptPassword() {
-        String encryptedMessage = encryptionPrefs.encryptedPassword().get().trim();
+        String encryptedMessage = encryptionPrefs.encryptedPassword().get();
         byte[] encryptedMessageBytes = stringToBytes(encryptedMessage);
-        GCMParameterSpec spec = new GCMParameterSpec(128, stringToBytes(encryptionPrefs.ivPass().get().trim()));
+        GCMParameterSpec spec = new GCMParameterSpec(128, stringToBytes(encryptionPrefs.ivPass().get()));
         try {
             Cipher decryptCipher = Cipher.getInstance(CIPHER_TYPE);
             SecretKey secretKey = desCryptSecretKey(KeyAlias.PASS);
@@ -199,10 +133,42 @@ public class EncryptionStore {
         }
     }
 
+    private Cipher getCommonCipher(KeyAlias alias) throws NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException {
+        Cipher cipher = Cipher.getInstance(CIPHER_TYPE);
+        KeyGenerator keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE_NAME);
+        KeyGenParameterSpec spec = new KeyGenParameterSpec.Builder(alias.name(),
+                KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                .build();
+        keyGenerator.init(spec);
+        SecretKey secretKey = keyGenerator.generateKey();
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        return cipher;
+    }
+
+    private Cipher getFingerprintCipher() throws NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException {
+        KeyGenParameterSpec fingerprintSpec = new KeyGenParameterSpec.Builder(KeyAlias.FINGER.name(),
+                KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+                .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+                .setUserAuthenticationRequired(true)
+                .setEncryptionPaddings(
+                        KeyProperties.ENCRYPTION_PADDING_PKCS7)
+                .build();
+        Cipher fingerprintCipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/"
+                + KeyProperties.BLOCK_MODE_CBC + "/"
+                + KeyProperties.ENCRYPTION_PADDING_PKCS7);
+        KeyGenerator fingerprintKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE_NAME);
+        fingerprintKeyGenerator.init(fingerprintSpec);
+        fingerprintCipher.init(Cipher.ENCRYPT_MODE, fingerprintKeyGenerator.generateKey());
+        return fingerprintCipher;
+    }
+
     public void saveMessage(@NonNull String message) {
         try {
-            String encryptedMessage = bytesToString(messageCipher.doFinal(message.getBytes(ENCODING))).trim();
-            encryptionPrefs.ivMsg().put(bytesToString(messageCipher.getIV()).trim());
+            Cipher messageCipher = getCommonCipher(KeyAlias.MSG);
+            String encryptedMessage = bytesToString(messageCipher.doFinal(message.getBytes(ENCODING)));
+            encryptionPrefs.ivMsg().put(bytesToString(messageCipher.getIV()));
             encryptionPrefs.encryptedMsg().put(encryptedMessage);
             encryptionPrefs.messageSaved().put(true);
         } catch (Exception e) {
@@ -212,8 +178,9 @@ public class EncryptionStore {
 
     public void savePass(@NonNull final String password) {
         try {
+            Cipher passwordCipher = getCommonCipher(KeyAlias.PASS);
+            String encryptedString = bytesToString(passwordCipher.doFinal(password.getBytes(ENCODING)));
             encryptionPrefs.ivPass().put(bytesToString(passwordCipher.getIV()).trim());
-            String encryptedString = bytesToString(passwordCipher.doFinal(password.getBytes(ENCODING))).trim();
             encryptionPrefs.encryptedPassword().put(encryptedString);
             encryptionPrefs.fingerprint().put(false);
             keyStore.deleteEntry(KeyAlias.FINGER.name());
@@ -263,7 +230,14 @@ public class EncryptionStore {
     }
 
     public FingerprintManager.CryptoObject crypto() {
-        return new FingerprintManager.CryptoObject(fingerprintCipher);
+        try {
+            return new FingerprintManager.CryptoObject(getFingerprintCipher());
+        } catch (Exception e) {
+            Timber.e(e, "Failed to get crypto");
+        }
+        return null;
     }
 
+
 }
+
