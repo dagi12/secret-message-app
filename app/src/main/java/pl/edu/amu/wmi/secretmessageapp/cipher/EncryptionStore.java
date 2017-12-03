@@ -1,5 +1,6 @@
 package pl.edu.amu.wmi.secretmessageapp.cipher;
 
+import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -44,9 +45,6 @@ import timber.log.Timber;
 @EBean(scope = EBean.Scope.Singleton)
 public class EncryptionStore {
 
-    public static String CIPHER_TYPE = "AES/GCM/NoPadding";
-
-
     @Pref
     EncryptionPrefs_ encryptionPrefs;
 
@@ -59,6 +57,8 @@ public class EncryptionStore {
     @SystemService
     FingerprintManager fingerprintManager;
 
+    private static String CIPHER_TYPE = "AES/GCM/NoPadding";
+
     private static final String ENCODING = "UTF-8";
 
     private static final String STORE_NAME = "AndroidKeyStore";
@@ -67,11 +67,27 @@ public class EncryptionStore {
 
     private Cipher messageCipher;
 
-    private Cipher decryptCipher;
-
     private Cipher passwordCipher;
 
     private KeyStore keyStore;
+
+    private KeyGenerator passwordKeyGenerator;
+
+    private KeyGenerator fingerprintKeyGenerator;
+
+    private KeyGenerator messageKeyGenerator;
+
+    private KeyGenParameterSpec passwordSpec = specBuilder(KeyAlias.PASS);
+
+    private KeyGenParameterSpec messageSpec = specBuilder(KeyAlias.MSG);
+
+    private KeyGenParameterSpec fingerprintSpec = new KeyGenParameterSpec.Builder(KeyAlias.FINGER.name(),
+            KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+            .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+            .setUserAuthenticationRequired(true)
+            .setEncryptionPaddings(
+                    KeyProperties.ENCRYPTION_PADDING_PKCS7)
+            .build();
 
     private static String bytesToString(byte[] bytes) {
         return Base64.encodeToString(bytes, Base64.DEFAULT);
@@ -102,21 +118,11 @@ public class EncryptionStore {
     }
 
     private void initKeyGenParameterSpec() {
-        KeyGenParameterSpec passwordSpec = specBuilder(KeyAlias.PASS);
-        KeyGenParameterSpec messageSpec = specBuilder(KeyAlias.MSG);
-        KeyGenParameterSpec fingerprintSpec = new KeyGenParameterSpec.Builder(KeyAlias.FINGER.name(),
-                KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
-                .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
-                .setUserAuthenticationRequired(true)
-                .setEncryptionPaddings(
-                        KeyProperties.ENCRYPTION_PADDING_PKCS7)
-                .build();
         try {
-            KeyGenerator passwordKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE_NAME);
-            KeyGenerator fingerprintKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE_NAME);
-            KeyGenerator messageKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE_NAME);
+            passwordKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE_NAME);
+            fingerprintKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE_NAME);
+            messageKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE_NAME);
             messageKeyGenerator.init(messageSpec);
-
             passwordKeyGenerator.init(passwordSpec);
             fingerprintKeyGenerator.init(fingerprintSpec);
             fingerprintCipher.init(Cipher.ENCRYPT_MODE, fingerprintKeyGenerator.generateKey());
@@ -143,13 +149,15 @@ public class EncryptionStore {
     }
 
     public String decryptPassword() {
-        String encryptedMessage = encryptionPrefs.encryptedPassword().get();
+        String encryptedMessage = encryptionPrefs.encryptedPassword().get().trim();
         byte[] encryptedMessageBytes = stringToBytes(encryptedMessage);
-        GCMParameterSpec spec = new GCMParameterSpec(128, stringToBytes(encryptionPrefs.ivPass().get()));
+        GCMParameterSpec spec = new GCMParameterSpec(128, stringToBytes(encryptionPrefs.ivPass().get().trim()));
         try {
-            decryptCipher.init(Cipher.DECRYPT_MODE, desCryptSecretKey(KeyAlias.PASS), spec);
+            Cipher decryptCipher = Cipher.getInstance(CIPHER_TYPE);
+            SecretKey secretKey = desCryptSecretKey(KeyAlias.PASS);
+            decryptCipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
             return new String(decryptCipher.doFinal(encryptedMessageBytes), ENCODING);
-        } catch (InvalidKeyException | InvalidAlgorithmParameterException | UnsupportedEncodingException | IllegalBlockSizeException | BadPaddingException e) {
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | InvalidAlgorithmParameterException | UnsupportedEncodingException | IllegalBlockSizeException | BadPaddingException e) {
             Timber.e(e);
         }
         return null;
@@ -166,14 +174,16 @@ public class EncryptionStore {
     }
 
     public String decryptMessage() {
-        String encryptedMessage = encryptionPrefs.encryptedMsg().get();
+        String encryptedMessage = encryptionPrefs.encryptedMsg().get().trim();
         byte[] encryptedMessageBytes = stringToBytes(encryptedMessage);
-        String msgIv = encryptionPrefs.ivMsg().get();
+        String msgIv = encryptionPrefs.ivMsg().get().trim();
         GCMParameterSpec spec = new GCMParameterSpec(128, stringToBytes(msgIv));
         try {
-            messageCipher.init(Cipher.DECRYPT_MODE, desCryptSecretKey(KeyAlias.MSG), spec);
-            return new String(messageCipher.doFinal(encryptedMessageBytes), ENCODING);
-        } catch (UnsupportedEncodingException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException | InvalidKeyException e) {
+            SecretKey secretKey = desCryptSecretKey(KeyAlias.MSG);
+            Cipher decryptCipher = Cipher.getInstance(CIPHER_TYPE);
+            decryptCipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
+            return new String(decryptCipher.doFinal(encryptedMessageBytes), ENCODING);
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | UnsupportedEncodingException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException | InvalidKeyException e) {
             Timber.e(e);
         }
         return null;
@@ -191,9 +201,10 @@ public class EncryptionStore {
 
     public void saveMessage(@NonNull String message) {
         try {
-            encryptionPrefs.ivMsg().put(bytesToString(messageCipher.getIV()));
-            String encryptedMessage = bytesToString(messageCipher.doFinal(message.getBytes(ENCODING)));
+            String encryptedMessage = bytesToString(messageCipher.doFinal(message.getBytes(ENCODING))).trim();
+            encryptionPrefs.ivMsg().put(bytesToString(messageCipher.getIV()).trim());
             encryptionPrefs.encryptedMsg().put(encryptedMessage);
+            encryptionPrefs.messageSaved().put(true);
         } catch (Exception e) {
             Timber.e(e, "Failed to encrypt message");
         }
@@ -201,8 +212,8 @@ public class EncryptionStore {
 
     public void savePass(@NonNull final String password) {
         try {
-            encryptionPrefs.ivPass().put(bytesToString(passwordCipher.getIV()));
-            String encryptedString = bytesToString(passwordCipher.doFinal(password.getBytes(ENCODING)));
+            encryptionPrefs.ivPass().put(bytesToString(passwordCipher.getIV()).trim());
+            String encryptedString = bytesToString(passwordCipher.doFinal(password.getBytes(ENCODING))).trim();
             encryptionPrefs.encryptedPassword().put(encryptedString);
             encryptionPrefs.fingerprint().put(false);
             keyStore.deleteEntry(KeyAlias.FINGER.name());
@@ -212,6 +223,7 @@ public class EncryptionStore {
     }
 
 
+    @SuppressLint("ApplySharedPref")
     public void resetData() {
         try {
             keyStore.deleteEntry(KeyAlias.MSG.name());
@@ -220,10 +232,13 @@ public class EncryptionStore {
         } catch (KeyStoreException e) {
             Timber.e(e);
         }
-        encryptionPrefs.clear();
+        encryptionPrefs
+                .getSharedPreferences()
+                .edit()
+                .clear()
+                .commit();
         Intent intent = new Intent(context, ConfigActivity_.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        encryptionPrefs.messageSaved().put(false);
         context.startActivity(intent);
     }
 

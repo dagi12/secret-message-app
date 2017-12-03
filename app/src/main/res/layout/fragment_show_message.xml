@@ -10,10 +10,10 @@
         android:id="@+id/tv_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:text="@string/message"
+        android:layout_marginBottom="@dimen/margin_2x"
+        android:layout_marginTop="@dimen/margin_0x"
         android:textColor="@color/text_color"
-        android:textSize="@dimen/text_size_2x"/>
+        android:textSize="@dimen/text_size_3x"/>
 
     <TextView
         android:id="@+id/message_text"
@@ -23,6 +23,7 @@
 
     <Button
         android:id="@+id/delete_data_button"
+        style="@style/AppTheme.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/remove_data"/>

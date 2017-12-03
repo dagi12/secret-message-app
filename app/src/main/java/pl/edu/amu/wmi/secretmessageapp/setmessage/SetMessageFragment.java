@@ -49,7 +49,6 @@ public class SetMessageFragment extends Fragment implements ISlidePolicy {
 
     private boolean manualDone() {
         if (isPolicyRespected()) {
-            setMessageViewModel.saveMessage(etCreateMessage.getText().toString());
             configListener.onMessageSaved(this);
             return true;
         }

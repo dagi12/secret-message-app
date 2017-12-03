@@ -5,7 +5,7 @@ import org.androidannotations.annotations.sharedpreferences.SharedPref;
 /**
  * Stworzone przez Eryk Mariankowski dnia 01.12.17.
  */
-@SharedPref
+@SharedPref(SharedPref.Scope.APPLICATION_DEFAULT)
 public interface EncryptionPrefs {
 
     String ivPass();

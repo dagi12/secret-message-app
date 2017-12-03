@@ -28,8 +28,7 @@ class ConfigViewModel {
     EncryptionPrefs_ encryptionPrefs;
 
     void saveMessage(String message) {
-        encryptionPrefs.messageSaved().put(true);
-        encryptionPrefs.encryptedMsg().put(message);
+        encryptionStore.saveMessage(message);
     }
 
     boolean initConfig(Activity activity) {
@@ -37,15 +36,14 @@ class ConfigViewModel {
         String result = encryptionStore.checkFingerprintPermission();
         if (result != null) {
             DialogHelper.errorDialog(activity, result);
-        } else {
-            encryptionStore.init();
-            return true;
+            return false;
         }
-        return false;
+        encryptionStore.init();
+        return true;
     }
 
     boolean checkIfMessageSaved() {
-        return encryptionPrefs.messageSaved().getOr(false);
+        return encryptionPrefs.messageSaved().get();
     }
 
     boolean checkIfFingerprintAuth() {

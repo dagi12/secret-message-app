@@ -67,4 +67,7 @@ dependencies {
     // ogólna biblioteka do wstrzykiwania zależności i uproszczenia kodu Androidowego, generuje klasy
     compile 'org.androidannotations:androidannotations-api:4.4.0'
     annotationProcessor "org.androidannotations:androidannotations:4.4.0"
+
+    // ładne tosty ;)
+    compile 'com.github.Shashank02051997:FancyToast-Android:0.1.3'
 }

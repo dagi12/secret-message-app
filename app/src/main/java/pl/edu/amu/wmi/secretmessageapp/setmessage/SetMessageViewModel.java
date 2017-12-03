@@ -14,8 +14,4 @@ class SetMessageViewModel {
     @Bean
     EncryptionStore encryptionStore;
 
-
-    void saveMessage(String message) {
-        encryptionStore.saveMessage(message);
-    }
 }

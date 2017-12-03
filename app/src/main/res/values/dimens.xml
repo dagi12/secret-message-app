@@ -9,6 +9,7 @@
     <dimen name="margin_5x">40dp</dimen>
     <dimen name="margin_6x">48dp</dimen>
 
+
     <!-- Base padding -->
     <dimen name="padding_0x">4dp</dimen>
     <dimen name="padding_1x">8dp</dimen>
@@ -29,5 +30,6 @@
     <dimen name="et_width">250dp</dimen>
     <integer name="et_max_len">255</integer>
     <integer name="password_max_len">10</integer>
+    <dimen name="rounded_button_radius">53dp</dimen>
 
 </resources>
