@@ -15,7 +15,7 @@ import pl.edu.amu.wmi.secretmessageapp.helper.CommonDialogFragment;
 /**
  * Stworzone przez Eryk Mariankowski dnia 01.12.17.
  */
-@EFragment(value = R.layout.fragment_fingerprint)
+@EFragment(value = R.layout.fragment_fingerprint_container)
 public class FingerprintDialogFragment extends CommonDialogFragment implements FingerprintAuthCallback {
 
     @Bean
