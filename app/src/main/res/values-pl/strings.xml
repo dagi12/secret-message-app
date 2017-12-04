@@ -1,52 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">SecretMessageApp</string>
 
     <!-- common stuff -->
     <string name="error">Błąd</string>
-    <string name="notification">Powiadomienie</string>
-    <string name="enable">Włącz</string>
-    <string name="disable">Wyłącz</string>
-    <string name="cancel">Anuluj</string>
-    <string name="retry">Ponów</string>
-    <string name="off">WYŁ.</string>
-    <string name="continue_txt">Kontynuuj</string>
-    <string name="please_wait">Prosimy poczekać…</string>
-    <string name="authorization">Uwierzytelnianie…</string>
-    <string name="delete">Usuń</string>
-    <string name="no_data">Brak danych</string>
-    <string name="comments">Komentarze</string>
-    <string name="publish">Opublikuj</string>
-    <string name="initializing">Initializing…</string>
 
-    <string name="fingerprint">Odcisk palca</string>
     <string name="password">Hasło</string>
-    <string name="security_method">Wybierz metodę zabezpieczeń</string>
-    <string name="init_problem">Problem z inicjalizacją klucza dostępu</string>
-    <string name="msg_saved">Zapisano wiadomość</string>
-    <string name="no_msg">Brak wiadomości</string>
     <string name="processing_error">Błąd przy przetwarzaniu</string>
-    <string name="no_auth">Brak autoryzacji</string>
     <string name="no_sensor">Nie wykryto czujnika linii papilarnych</string>
-    <string name="no_saved_fingerprints">Zapisz przynajmniej jeden odcisk palca w ustawieniach</string>
-    <string name="enable_screen_lock">Włącz ekran blokady w ustawieniach</string>
-    <string name="auth_method_changed">Zmieniono sposób autoryzacji</string>
-    <string name="auth_success">Autoryzacja udana</string>
-    <string name="auth_failed">Autoryzacja nieudana</string>
-    <string name="encryption_error">Błąd podczas procesu szyfrowania</string>
-    <string name="no_password">Brak hasła</string>
-    <string name="empty_password">Puste hasło</string>
-    <string name="data_deleted">Dane zostały usunięte</string>
-    <string name="attempts_exceeded">Liczba prób przekroczona, dane usunięto</string>
-    <string name="data_deletion_error">Problem z usunięciem danych</string>
-    <string name="create_password">Utwórz hasło</string>
     <string name="register">Zarejestruj</string>
     <string name="create_message">Utwórz wiadomość</string>
-    <string name="no_fingerprint1"><![CDATA[Secure lock screen hasn\'t set up. Go to \'Settings -> Security -> Fingerprint\' to set up a fingerprint]]></string>
-    <string name="no_fingerprint2"><![CDATA[Go to \'Settings -> Security -> Fingerprint\' and register at least one fingerprint]]></string>
+    <string name="no_fingerprint1"><![CDATA[Nie ustawiono ekranu blokady. Przejdż do \'Ustawienia -> Bezpieczeństwo -> Odcisk palca\' aby zapisać odcisk palca]]></string>
+    <string name="no_fingerprint2"><![CDATA[Przejdź do \'Ustawienia -> Zabezpieczenia -> Odcisk palca\' i zarejestruj przynajmniej jeden odcisk palca.]]></string>
     <string name="short_password">Password must be at least 6 characters long.</string>
     <string name="remove_data">Usuń dane</string>
-    <string name="message">Message</string>
-    <string name="log_in">Log in</string>
+    <string name="log_in">Zaloguj się</string>
+    <string name="fingerprint_description">Potwierdź odcisk palca, aby kontynuować</string>
+    <string name="fingerprint_hint">Dotknij czujnik</string>
+    <string name="fingerprint_not_recognized">Odcisk palca nierozpoznany. Spróbuj jeszcze raz</string>
+    <string name="fingerprint_success">Odcisk palca rozpoznany</string>
+    <string name="new_fingerprint_enrolled_description">Nowy odcisk palca został dodany do urządzenia, więc potrzebne jest uwierzytelnienie hasłem.</string>
+    <string name="password_description">Wpisz hasło, aby kontynuować</string>
+    <string name="short_msg">Wiadomośc musi posiadać przynajmniej 6 znaków.</string>
+
+    <string name="change_for_password">Zamień na hasło</string>
+    <string name="change_for_fingerprint">Zamień na odcisk palca</string>
+    <string name="done">GOTOWE</string>
 </resources>
 
