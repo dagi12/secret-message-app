@@ -13,7 +13,7 @@ import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.SystemService;
 
 import pl.edu.amu.wmi.secretmessageapp.R;
-import pl.edu.amu.wmi.secretmessageapp.cipher.EncryptionStore;
+import pl.edu.amu.wmi.secretmessageapp.encryption.EncryptionStore;
 
 /**
  * @author Eryk Mariankowski <eryk.mariankowski@247.codes> on 02.12.17.
@@ -91,15 +91,15 @@ public class FingerprintViewModel extends FingerprintManager.AuthenticationCallb
                 null);
     }
 
-    public boolean isFingerprintAuthAvailable() {
+    public boolean isFingerprintAuthUnAvailable() {
         // The line below prevents the false positive inspection from Android Studio
         // noinspection ResourceType
-        return mFingerprintManager.isHardwareDetected()
-                && mFingerprintManager.hasEnrolledFingerprints();
+        return !mFingerprintManager.isHardwareDetected()
+                || !mFingerprintManager.hasEnrolledFingerprints();
     }
 
     public boolean startListening() {
-        if (!isFingerprintAuthAvailable()) {
+        if (isFingerprintAuthUnAvailable()) {
             return false;
         }
 

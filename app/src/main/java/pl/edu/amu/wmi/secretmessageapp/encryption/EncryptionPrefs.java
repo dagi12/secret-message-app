@@ -1,4 +1,4 @@
-package pl.edu.amu.wmi.secretmessageapp.cipher;
+package pl.edu.amu.wmi.secretmessageapp.encryption;
 
 import org.androidannotations.annotations.sharedpreferences.SharedPref;
 

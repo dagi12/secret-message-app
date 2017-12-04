@@ -11,8 +11,9 @@ import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.sharedpreferences.Pref;
 
 import pl.edu.amu.wmi.secretmessageapp.R;
-import pl.edu.amu.wmi.secretmessageapp.cipher.EncryptionPrefs_;
-import pl.edu.amu.wmi.secretmessageapp.cipher.EncryptionStore;
+import pl.edu.amu.wmi.secretmessageapp.encryption.EncryptionPrefs_;
+import pl.edu.amu.wmi.secretmessageapp.encryption.EncryptionStore;
+import pl.edu.amu.wmi.secretmessageapp.encryption.KeyStoreService;
 
 /**
  * @author Eryk Mariankowski <eryk.mariankowski@247.codes> on 02.12.17.
@@ -29,13 +30,16 @@ public class PasswordViewModel {
     @RootContext
     Context context;
 
+    @Bean
+    KeyStoreService keyStoreService;
+
     private int attempts = 0;
 
     void resetPasswordAfterThreeAttempts() {
         attempts = attempts + 1;
         if (attempts == 3) {
             attempts = 0;
-            encryptionStore.resetData();
+            keyStoreService.resetData();
         }
     }
 

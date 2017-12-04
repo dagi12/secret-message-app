@@ -13,8 +13,8 @@ public class DialogHelper {
     private DialogHelper() {
     }
 
-    public static AlertDialog errorDialog(Context context, String message) {
-        return new AlertDialog.Builder(context, R.style.AppTheme_AlertDialogCustom)
+    public static void errorDialog(Context context, String message) {
+        new AlertDialog.Builder(context, R.style.AppTheme_AlertDialogCustom)
                 .setTitle(context.getString(R.string.error))
                 .setMessage(message)
                 .setCancelable(false)

@@ -28,6 +28,6 @@ public class BlockedFragment extends Fragment implements ISlidePolicy {
      */
     @Override
     public void onUserIllegallyRequestedNextPage() {
-
+        // stub
     }
 }
