@@ -18,8 +18,9 @@ import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.sharedpreferences.Pref;
 
 import pl.edu.amu.wmi.secretmessageapp.R;
-import pl.edu.amu.wmi.secretmessageapp.cipher.EncryptionPrefs_;
+import pl.edu.amu.wmi.secretmessageapp.cipher.KeyAlias;
 import pl.edu.amu.wmi.secretmessageapp.config.ConfigListener;
+import pl.edu.amu.wmi.secretmessageapp.encryption.EncryptionPrefs_;
 import pl.edu.amu.wmi.secretmessageapp.fingerprint.FingerprintAuthCallback;
 import pl.edu.amu.wmi.secretmessageapp.fingerprint.FingerprintViewModel;
 import pl.edu.amu.wmi.secretmessageapp.helper.CommonDialogFragment;
@@ -61,7 +62,10 @@ public class SignUpDialogFragment extends CommonDialogFragment implements Passwo
     TextView mPasswordDescriptionTextView;
 
     @FragmentArg
-    Stage stage;
+    KeyAlias keyAlias;
+
+    @FragmentArg
+    Boolean changeAuth;
 
     @Bean
     SignUpViewModel signUpViewModel;
@@ -81,7 +85,7 @@ public class SignUpDialogFragment extends CommonDialogFragment implements Passwo
 
     @Click(R.id.btn_second_dialog_button)
     void onSecondDialogButtonClick() {
-        if (stage == Stage.FINGERPRINT) {
+        if (keyAlias == KeyAlias.FINGER && !changeAuth) {
             goToBackup();
         } else {
             passwordViewModel.verifyPassword(password, passwordLayout, this);
@@ -90,11 +94,14 @@ public class SignUpDialogFragment extends CommonDialogFragment implements Passwo
 
     @AfterViews
     protected void initView() {
+        if (keyAlias == KeyAlias.FINGER && changeAuth) {
+            secondDialogButton.setVisibility(View.INVISIBLE);
+        }
         fingerprintViewModel.initFingerprintViewModel(fingerprintIcon, fingerprintStatus, this);
         getDialog().setTitle(getString(R.string.register));
         passwordViewModel.passwordActionListener(password, passwordLayout, this);
-        updateStage();
-        if (!fingerprintViewModel.isFingerprintAuthAvailable()) {
+        updateAliasStage();
+        if (fingerprintViewModel.isFingerprintAuthUnAvailable() && !changeAuth) {
             goToBackup();
         }
     }
@@ -102,7 +109,7 @@ public class SignUpDialogFragment extends CommonDialogFragment implements Passwo
     @Override
     public void onResume() {
         super.onResume();
-        if (stage == Stage.FINGERPRINT && fingerprintViewModel.startListening()) {
+        if (keyAlias == KeyAlias.FINGER && fingerprintViewModel.startListening()) {
             fingerprintViewModel.authenticate();
             fingerprintIcon.setImageResource(R.drawable.ic_fp_40px);
         }
@@ -127,8 +134,8 @@ public class SignUpDialogFragment extends CommonDialogFragment implements Passwo
      * button. This can also happen when the user had too many fingerprint attempts.
      */
     private void goToBackup() {
-        stage = Stage.PASSWORD;
-        updateStage();
+        keyAlias = KeyAlias.PASS;
+        updateAliasStage();
         password.requestFocus();
 
         // Show the keyboard.
@@ -138,14 +145,14 @@ public class SignUpDialogFragment extends CommonDialogFragment implements Passwo
         fingerprintViewModel.stopListening();
     }
 
-    private void updateStage() {
-        switch (stage) {
-            case FINGERPRINT:
+    private void updateAliasStage() {
+        switch (keyAlias) {
+            case FINGER:
                 secondDialogButton.setText(R.string.use_password);
                 fingerprintContainer.setVisibility(View.VISIBLE);
                 backupContainer.setVisibility(View.GONE);
                 break;
-            case PASSWORD:
+            case PASS:
                 secondDialogButton.setText(android.R.string.ok);
                 fingerprintContainer.setVisibility(View.GONE);
                 backupContainer.setVisibility(View.VISIBLE);
@@ -158,7 +165,11 @@ public class SignUpDialogFragment extends CommonDialogFragment implements Passwo
     @Override
     public void onPasswordVerified(String passwordText) {
         signUpViewModel.savePassword(passwordText);
-        configListener.onRegistered(false);
+        if (changeAuth) {
+            configListener.onAuthChanged(KeyAlias.PASS);
+        } else {
+            configListener.onRegistered();
+        }
         dismiss();
     }
 
@@ -174,7 +185,12 @@ public class SignUpDialogFragment extends CommonDialogFragment implements Passwo
             // FingerprintCallback from SignUpViewModel. Let the activity know that authentication was
             // successful.
             signUpViewModel.saveFingerprint();
-            configListener.onRegistered(true);
+            if (changeAuth) {
+                configListener.onAuthChanged(KeyAlias.FINGER);
+            } else {
+                configListener.onRegistered();
+            }
+
             dismiss();
         });
     }

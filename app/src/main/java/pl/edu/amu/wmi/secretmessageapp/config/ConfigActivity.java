@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
+import android.widget.Button;
 
 import com.github.paolorotolo.appintro.AppIntro;
 
@@ -13,18 +15,21 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 
 import pl.edu.amu.wmi.secretmessageapp.MainActivity_;
+import pl.edu.amu.wmi.secretmessageapp.R;
+import pl.edu.amu.wmi.secretmessageapp.cipher.KeyAlias;
 import pl.edu.amu.wmi.secretmessageapp.fingerprint.FingerprintDialogFragment_;
 import pl.edu.amu.wmi.secretmessageapp.password.PasswordDialogFragment_;
 import pl.edu.amu.wmi.secretmessageapp.setmessage.SetMessageFragment;
 import pl.edu.amu.wmi.secretmessageapp.setmessage.SetMessageFragment_;
-import pl.edu.amu.wmi.secretmessageapp.signup.SignUpDialogFragment_;
-import pl.edu.amu.wmi.secretmessageapp.signup.Stage;
+
 
 /**
  * @author Eryk Mariankowski <eryk.mariankowski@247.codes> on 30.11.17.
  */
 @EActivity
 public class ConfigActivity extends AppIntro implements ConfigListener {
+
+    public static final String CHANGE_METHOD_KEY = "CHANGE_METHOD_KEY";
 
     @Bean
     ConfigViewModel configViewModel;
@@ -41,18 +46,26 @@ public class ConfigActivity extends AppIntro implements ConfigListener {
         addSlide(BlockedFragment_.builder().build());
         if (configViewModel.initConfig(this)) {
             if (!configViewModel.checkIfMessageSaved()) {
-                showDialog();
+                configViewModel.signUpDialog(this, KeyAlias.FINGER, false);
                 addSlide(SetMessageFragment_.builder().build());
                 showSkipButton(false);
                 setProgressButtonEnabled(false);
+                ((Button) doneButton).setText(R.string.done);
             } else {
-                authenticate();
+                String key = getIntent().getStringExtra(CHANGE_METHOD_KEY);
+                if (TextUtils.isEmpty(key)) {
+                    authenticate();
+                } else if (key.equals(KeyAlias.FINGER.name())) {
+                    configViewModel.signUpDialog(this, KeyAlias.FINGER, true);
+                } else {
+                    configViewModel.signUpDialog(this, KeyAlias.PASS, true);
+                }
             }
         }
     }
 
     private void authenticate() {
-        if (configViewModel.checkIfFingerprintAuth()) {
+        if (configViewModel.getFingerprintAuth()) {
             showFingerprintDialog();
         } else {
             showPasswordDialog();
@@ -66,7 +79,6 @@ public class ConfigActivity extends AppIntro implements ConfigListener {
         dialogFragment.show(getFragmentManager(), TAG);
     }
 
-
     private void showFingerprintDialog() {
         DialogFragment dialogFragment = FingerprintDialogFragment_
                 .builder()
@@ -79,16 +91,8 @@ public class ConfigActivity extends AppIntro implements ConfigListener {
         // disable back button
     }
 
-    private void showDialog() {
-        DialogFragment dialogFragment = SignUpDialogFragment_
-                .builder()
-                .stage(Stage.FINGERPRINT)
-                .build();
-        dialogFragment.show(getFragmentManager(), TAG);
-    }
-
     @Override
-    public void onRegistered(boolean withFingerprint) {
+    public void onRegistered() {
         setProgressButtonEnabled(true);
         pager.goToNextSlide();
     }
@@ -112,6 +116,15 @@ public class ConfigActivity extends AppIntro implements ConfigListener {
     public void onLoggedIn() {
         Intent intent = new Intent(this, MainActivity_.class);
         startActivity(intent);
+    }
+
+    @Override
+    public void onAuthChanged(KeyAlias forMethod) {
+        if (KeyAlias.PASS == forMethod) {
+            authenticate();
+        } else {
+            onLoggedIn();
+        }
     }
 
 

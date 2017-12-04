@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:id="@+id/show_message_layout"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:gravity="center_horizontal"
               android:orientation="vertical">
+
+    <ImageView
+        android:layout_width="@dimen/ic_intro_launcher_width"
+        android:layout_height="@dimen/ic_intro_launcher_height"
+        android:contentDescription="@string/intro_picture"
+        android:src="@drawable/ic_launcher_web"/>
 
     <TextView
         android:id="@+id/tv_message"
@@ -15,17 +20,18 @@
         android:textColor="@color/text_color"
         android:textSize="@dimen/text_size_3x"/>
 
-    <TextView
-        android:id="@+id/message_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"/>
-
     <Button
         android:id="@+id/delete_data_button"
         style="@style/AppTheme.Button"
-        android:layout_width="wrap_content"
+        android:layout_width="@dimen/button_width"
         android:layout_height="wrap_content"
         android:text="@string/remove_data"/>
+
+    <Button
+        android:id="@+id/btn_change_auth_method"
+        style="@style/AppTheme.Button"
+        android:layout_width="@dimen/button_width"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_4x"/>
 
 </LinearLayout>
